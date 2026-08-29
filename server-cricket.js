@@ -50,18 +50,57 @@ const WOMENS_CATEGORY = "Women's T20 World Cup";
 const INDIA_CATEGORY = "Indian Men";
 const ENG_NZ_CATEGORY = "Test Championship";
 
+// Source: https://www.cricinfo.com/team/india-6/match-schedule-fixtures-and-results (synced 2026-08-29).
+// Cricinfo renders start times in Asia/Kolkata; startISO below is the UTC equivalent.
 const INDIA_FUTURE_FIXTURES = [
-  { id: "espn-eng-ind-2026-t20-1", matchNo: "1st T20I", teams: ["England", "India"], startISO: "2026-07-01T13:30:00.000Z", venue: "Riverside Ground, Chester-le-Street", url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/match-schedule-fixtures-and-results" },
-  { id: "espn-eng-ind-2026-t20-2", matchNo: "2nd T20I", teams: ["England", "India"], startISO: "2026-07-04T13:30:00.000Z", venue: "Old Trafford, Manchester", url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/match-schedule-fixtures-and-results" },
-  { id: "espn-eng-ind-2026-t20-3", matchNo: "3rd T20I", teams: ["England", "India"], startISO: "2026-07-07T13:30:00.000Z", venue: "Trent Bridge, Nottingham", url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/match-schedule-fixtures-and-results" },
-  { id: "espn-eng-ind-2026-t20-4", matchNo: "4th T20I", teams: ["England", "India"], startISO: "2026-07-09T13:30:00.000Z", venue: "County Ground, Bristol", url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/match-schedule-fixtures-and-results" },
-  { id: "espn-eng-ind-2026-t20-5", matchNo: "5th T20I", teams: ["England", "India"], startISO: "2026-07-11T13:30:00.000Z", venue: "Rose Bowl, Southampton", url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/match-schedule-fixtures-and-results" },
-  { id: "espn-eng-ind-2026-odi-1", matchNo: "1st ODI", teams: ["England", "India"], startISO: "2026-07-14T13:30:00.000Z", venue: "Edgbaston, Birmingham", url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/match-schedule-fixtures-and-results" },
-  { id: "espn-eng-ind-2026-odi-2", matchNo: "2nd ODI", teams: ["England", "India"], startISO: "2026-07-16T13:30:00.000Z", venue: "Sophia Gardens, Cardiff", url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/match-schedule-fixtures-and-results" },
-  { id: "espn-eng-ind-2026-odi-3", matchNo: "3rd ODI", teams: ["England", "India"], startISO: "2026-07-19T13:30:00.000Z", venue: "Lord's, London", url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/match-schedule-fixtures-and-results" },
-  { id: "espn-zim-ind-2026-t20-1", matchNo: "1st T20I", teams: ["Zimbabwe", "India"], startISO: "2026-07-23T12:00:00.000Z", venue: "Harare Sports Club, Harare", url: "https://www.espncricinfo.com/series/india-in-zimbabwe-2026-1530058", timeTBA: true },
-  { id: "espn-zim-ind-2026-t20-2", matchNo: "2nd T20I", teams: ["Zimbabwe", "India"], startISO: "2026-07-25T12:00:00.000Z", venue: "Harare Sports Club, Harare", url: "https://www.espncricinfo.com/series/india-in-zimbabwe-2026-1530058", timeTBA: true },
-  { id: "espn-zim-ind-2026-t20-3", matchNo: "3rd T20I", teams: ["Zimbabwe", "India"], startISO: "2026-07-26T12:00:00.000Z", venue: "Harare Sports Club, Harare", url: "https://www.espncricinfo.com/series/india-in-zimbabwe-2026-1530058", timeTBA: true }
+  // Afghanistan tour of India, Sep 2026
+  { id: "espn-ind-afg-2026-t20-1", matchNo: "1st T20I", teams: ["India", "Afghanistan"], startISO: "2026-09-13T14:00:00.000Z", venue: "Delhi", url: "https://www.espncricinfo.com/series/afghanistan-in-india-2026-1549583/india-vs-afghanistan-1st-t20i-1549586/live-cricket-score" },
+  { id: "espn-ind-afg-2026-t20-2", matchNo: "2nd T20I", teams: ["India", "Afghanistan"], startISO: "2026-09-15T14:00:00.000Z", venue: "Delhi", url: "https://www.espncricinfo.com/series/afghanistan-in-india-2026-1549583/india-vs-afghanistan-2nd-t20i-1549587/live-cricket-score" },
+  { id: "espn-ind-afg-2026-t20-3", matchNo: "3rd T20I", teams: ["India", "Afghanistan"], startISO: "2026-09-17T14:00:00.000Z", venue: "Delhi", url: "https://www.espncricinfo.com/series/afghanistan-in-india-2026-1549583/india-vs-afghanistan-3rd-t20i-1549588/live-cricket-score" },
+
+  // West Indies tour of India, 2026-27
+  { id: "espn-ind-wi-2026-odi-1", matchNo: "1st ODI", teams: ["India", "West Indies"], startISO: "2026-09-27T08:30:00.000Z", venue: "Thiruvananthapuram", url: "https://www.espncricinfo.com/series/west-indies-in-india-2026-27-1529215/india-vs-west-indies-1st-odi-1529227/live-cricket-score" },
+  { id: "espn-ind-wi-2026-odi-2", matchNo: "2nd ODI", teams: ["India", "West Indies"], startISO: "2026-09-30T08:30:00.000Z", venue: "Guwahati", url: "https://www.espncricinfo.com/series/west-indies-in-india-2026-27-1529215/india-vs-west-indies-2nd-odi-1529228/live-cricket-score" },
+  { id: "espn-ind-wi-2026-odi-3", matchNo: "3rd ODI", teams: ["India", "West Indies"], startISO: "2026-10-03T08:30:00.000Z", venue: "New Chandigarh", url: "https://www.espncricinfo.com/series/west-indies-in-india-2026-27-1529215/india-vs-west-indies-3rd-odi-1529229/live-cricket-score" },
+  { id: "espn-ind-wi-2026-t20-1", matchNo: "1st T20I", teams: ["India", "West Indies"], startISO: "2026-10-06T13:30:00.000Z", venue: "Lucknow", url: "https://www.espncricinfo.com/series/west-indies-in-india-2026-27-1529215/india-vs-west-indies-1st-t20i-1529230/live-cricket-score" },
+  { id: "espn-ind-wi-2026-t20-2", matchNo: "2nd T20I", teams: ["India", "West Indies"], startISO: "2026-10-09T13:30:00.000Z", venue: "Ranchi", url: "https://www.espncricinfo.com/series/west-indies-in-india-2026-27-1529215/india-vs-west-indies-2nd-t20i-1529231/live-cricket-score" },
+  { id: "espn-ind-wi-2026-t20-3", matchNo: "3rd T20I", teams: ["India", "West Indies"], startISO: "2026-10-11T13:30:00.000Z", venue: "Indore", url: "https://www.espncricinfo.com/series/west-indies-in-india-2026-27-1529215/india-vs-west-indies-3rd-t20i-1529232/live-cricket-score" },
+  { id: "espn-ind-wi-2026-t20-4", matchNo: "4th T20I", teams: ["India", "West Indies"], startISO: "2026-10-14T13:30:00.000Z", venue: "Hyderabad", url: "https://www.espncricinfo.com/series/west-indies-in-india-2026-27-1529215/india-vs-west-indies-4th-t20i-1529233/live-cricket-score" },
+  { id: "espn-ind-wi-2026-t20-5", matchNo: "5th T20I", teams: ["India", "West Indies"], startISO: "2026-10-17T13:30:00.000Z", venue: "Bengaluru", url: "https://www.espncricinfo.com/series/west-indies-in-india-2026-27-1529215/india-vs-west-indies-5th-t20i-1529234/live-cricket-score" },
+
+  // India tour of New Zealand, 2026-27
+  { id: "espn-nz-ind-2026-t20-1", matchNo: "1st T20I", teams: ["New Zealand", "India"], startISO: "2026-10-22T07:00:00.000Z", venue: "Christchurch", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-1st-t20i-1539432/live-cricket-score" },
+  { id: "espn-nz-ind-2026-t20-2", matchNo: "2nd T20I", teams: ["New Zealand", "India"], startISO: "2026-10-24T07:00:00.000Z", venue: "Christchurch", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-2nd-t20i-1539433/live-cricket-score" },
+  { id: "espn-nz-ind-2026-t20-3", matchNo: "3rd T20I", teams: ["New Zealand", "India"], startISO: "2026-10-27T07:00:00.000Z", venue: "Wellington", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-3rd-t20i-1539434/live-cricket-score" },
+  { id: "espn-nz-ind-2026-t20-4", matchNo: "4th T20I", teams: ["New Zealand", "India"], startISO: "2026-10-30T07:00:00.000Z", venue: "Auckland", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-4th-t20i-1539435/live-cricket-score" },
+  { id: "espn-nz-ind-2026-t20-5", matchNo: "5th T20I", teams: ["New Zealand", "India"], startISO: "2026-11-01T07:00:00.000Z", venue: "Hamilton", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-5th-t20i-1539436/live-cricket-score" },
+  { id: "espn-nz-ind-2026-odi-1", matchNo: "1st ODI", teams: ["New Zealand", "India"], startISO: "2026-11-04T02:00:00.000Z", venue: "Auckland", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-1st-odi-1539437/live-cricket-score" },
+  { id: "espn-nz-ind-2026-odi-2", matchNo: "2nd ODI", teams: ["New Zealand", "India"], startISO: "2026-11-07T02:00:00.000Z", venue: "Wellington", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-2nd-odi-1539438/live-cricket-score" },
+  { id: "espn-nz-ind-2026-odi-3", matchNo: "3rd ODI", teams: ["New Zealand", "India"], startISO: "2026-11-10T02:00:00.000Z", venue: "Hamilton", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-3rd-odi-1539439/live-cricket-score" },
+  { id: "espn-nz-ind-2026-odi-4", matchNo: "4th ODI", teams: ["New Zealand", "India"], startISO: "2026-11-13T02:00:00.000Z", venue: "Mount Maunganui", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-4th-odi-1539440/live-cricket-score" },
+  { id: "espn-nz-ind-2026-odi-5", matchNo: "5th ODI", teams: ["New Zealand", "India"], startISO: "2026-11-15T02:00:00.000Z", venue: "Mount Maunganui", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-5th-odi-1539441/live-cricket-score" },
+  { id: "espn-nz-ind-2026-test-1", matchNo: "1st Test", teams: ["New Zealand", "India"], startISO: "2026-11-18T22:00:00.000Z", venue: "Wellington", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-1st-test-1539442/live-cricket-score" },
+  { id: "espn-nz-ind-2026-test-2", matchNo: "2nd Test", teams: ["New Zealand", "India"], startISO: "2026-11-26T22:00:00.000Z", venue: "Christchurch", url: "https://www.espncricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-2nd-test-1539443/live-cricket-score" },
+
+  // Sri Lanka tour of India, 2026-27
+  { id: "espn-ind-sl-2026-odi-1", matchNo: "1st ODI", teams: ["India", "Sri Lanka"], startISO: "2026-12-13T08:30:00.000Z", venue: "Delhi", url: "https://www.espncricinfo.com/series/sri-lanka-in-india-2026-27-1529220/india-vs-sri-lanka-1st-odi-1529235/live-cricket-score" },
+  { id: "espn-ind-sl-2026-odi-2", matchNo: "2nd ODI", teams: ["India", "Sri Lanka"], startISO: "2026-12-16T08:30:00.000Z", venue: "Bengaluru", url: "https://www.espncricinfo.com/series/sri-lanka-in-india-2026-27-1529220/india-vs-sri-lanka-2nd-odi-1529236/live-cricket-score" },
+  { id: "espn-ind-sl-2026-odi-3", matchNo: "3rd ODI", teams: ["India", "Sri Lanka"], startISO: "2026-12-19T08:30:00.000Z", venue: "Ahmedabad", url: "https://www.espncricinfo.com/series/sri-lanka-in-india-2026-27-1529220/india-vs-sri-lanka-3rd-odi-1529237/live-cricket-score" },
+  { id: "espn-ind-sl-2026-t20-1", matchNo: "1st T20I", teams: ["India", "Sri Lanka"], startISO: "2026-12-22T13:30:00.000Z", venue: "Rajkot", url: "https://www.espncricinfo.com/series/sri-lanka-in-india-2026-27-1529220/india-vs-sri-lanka-1st-t20i-1529238/live-cricket-score" },
+  { id: "espn-ind-sl-2026-t20-2", matchNo: "2nd T20I", teams: ["India", "Sri Lanka"], startISO: "2026-12-24T13:30:00.000Z", venue: "Cuttack", url: "https://www.espncricinfo.com/series/sri-lanka-in-india-2026-27-1529220/india-vs-sri-lanka-2nd-t20i-1529239/live-cricket-score" },
+  { id: "espn-ind-sl-2026-t20-3", matchNo: "3rd T20I", teams: ["India", "Sri Lanka"], startISO: "2026-12-27T13:30:00.000Z", venue: "Pune", url: "https://www.espncricinfo.com/series/sri-lanka-in-india-2026-27-1529220/india-vs-sri-lanka-3rd-t20i-1529240/live-cricket-score" },
+
+  // Zimbabwe tour of India, 2026-27
+  { id: "espn-ind-zim-2027-odi-1", matchNo: "1st ODI", teams: ["India", "Zimbabwe"], startISO: "2027-01-03T08:30:00.000Z", venue: "Eden Gardens", url: "https://www.espncricinfo.com/series/zimbabwe-in-india-2026-27-1529223/india-vs-zimbabwe-1st-odi-1529241/live-cricket-score" },
+  { id: "espn-ind-zim-2027-odi-2", matchNo: "2nd ODI", teams: ["India", "Zimbabwe"], startISO: "2027-01-06T08:30:00.000Z", venue: "Hyderabad", url: "https://www.espncricinfo.com/series/zimbabwe-in-india-2026-27-1529223/india-vs-zimbabwe-2nd-odi-1529242/live-cricket-score" },
+  { id: "espn-ind-zim-2027-odi-3", matchNo: "3rd ODI", teams: ["India", "Zimbabwe"], startISO: "2027-01-09T08:30:00.000Z", venue: "Wankhede", url: "https://www.espncricinfo.com/series/zimbabwe-in-india-2026-27-1529223/india-vs-zimbabwe-3rd-odi-1529243/live-cricket-score" },
+
+  // Australia tour of India, 2026-27
+  { id: "espn-ind-aus-2027-test-1", matchNo: "1st Test", teams: ["India", "Australia"], startISO: "2027-01-21T04:00:00.000Z", venue: "Nagpur", url: "https://www.espncricinfo.com/series/australia-in-india-2026-27-1529225/india-vs-australia-1st-test-1529244/live-cricket-score" },
+  { id: "espn-ind-aus-2027-test-2", matchNo: "2nd Test", teams: ["India", "Australia"], startISO: "2027-01-29T04:00:00.000Z", venue: "Chennai", url: "https://www.espncricinfo.com/series/australia-in-india-2026-27-1529225/india-vs-australia-2nd-test-1529245/live-cricket-score" },
+  { id: "espn-ind-aus-2027-test-3", matchNo: "3rd Test", teams: ["India", "Australia"], startISO: "2027-02-11T03:30:00.000Z", venue: "Guwahati", url: "https://www.espncricinfo.com/series/australia-in-india-2026-27-1529225/india-vs-australia-3rd-test-1529246/live-cricket-score" },
+  { id: "espn-ind-aus-2027-test-4", matchNo: "4th Test", teams: ["India", "Australia"], startISO: "2027-02-19T04:00:00.000Z", venue: "Ranchi", url: "https://www.espncricinfo.com/series/australia-in-india-2026-27-1529225/india-vs-australia-4th-test-1529247/live-cricket-score" },
+  { id: "espn-ind-aus-2027-test-5", matchNo: "5th Test", teams: ["India", "Australia"], startISO: "2027-02-27T04:00:00.000Z", venue: "Ahmedabad", url: "https://www.espncricinfo.com/series/australia-in-india-2026-27-1529225/india-vs-australia-5th-test-1529248/live-cricket-score" }
 ];
 
 const INDIA_RESULT_FIXTURES = [
@@ -71,89 +110,222 @@ const INDIA_RESULT_FIXTURES = [
     teams: ["England", "India"],
     startISO: "2026-07-01T13:30:00.000Z",
     venue: "Riverside Ground, Chester-le-Street",
-    url: "https://www.cricbuzz.com/live-cricket-scores/129392/ind-vs-eng-1st-t20i-india-tour-of-england-2026",
+    url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/england-vs-india-1st-t20i-1496574/full-scorecard",
     state: "Finished",
-    status: "No result - match abandoned due to rain",
+    status: "No result",
     score: "IND 189/7 (20 ov) | ENG did not bat",
     scores: [
       { team: "IND", score: "189/7", overs: "20" }
     ],
     playerOfMatch: ""
+  },
+  {
+    id: "eng-ind-2026-t20-2-result",
+    matchNo: "2nd T20I",
+    teams: ["England", "India"],
+    startISO: "2026-07-04T13:30:00.000Z",
+    venue: "Old Trafford, Manchester",
+    url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/england-vs-india-2nd-t20i-1496575/full-scorecard",
+    state: "Finished",
+    status: "England won by 4 wickets (with 6 balls remaining)",
+    score: "IND 190/7 (20 ov) | ENG 191/6 (19 ov)",
+    scores: [
+      { team: "IND", score: "190/7", overs: "20" },
+      { team: "ENG", score: "191/6", overs: "19" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "eng-ind-2026-t20-3-result",
+    matchNo: "3rd T20I",
+    teams: ["England", "India"],
+    startISO: "2026-07-07T13:30:00.000Z",
+    venue: "Trent Bridge, Nottingham",
+    url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/england-vs-india-3rd-t20i-1496576/full-scorecard",
+    state: "Finished",
+    status: "England won by 125 runs",
+    score: "ENG 201/7 (20 ov) | IND 76 (11.4 ov)",
+    scores: [
+      { team: "ENG", score: "201/7", overs: "20" },
+      { team: "IND", score: "76", overs: "11.4" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "eng-ind-2026-t20-4-result",
+    matchNo: "4th T20I",
+    teams: ["England", "India"],
+    startISO: "2026-07-09T13:30:00.000Z",
+    venue: "County Ground, Bristol",
+    url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/england-vs-india-4th-t20i-1496577/full-scorecard",
+    state: "Finished",
+    status: "England won by 9 wickets (with 37 balls remaining)",
+    score: "IND 158/7 (20 ov) | ENG 159/1 (13.5 ov)",
+    scores: [
+      { team: "IND", score: "158/7", overs: "20" },
+      { team: "ENG", score: "159/1", overs: "13.5" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "eng-ind-2026-t20-5-result",
+    matchNo: "5th T20I",
+    teams: ["England", "India"],
+    startISO: "2026-07-11T13:30:00.000Z",
+    venue: "Rose Bowl, Southampton",
+    url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/england-vs-india-5th-t20i-1496578/full-scorecard",
+    state: "Finished",
+    status: "England won by 56 runs",
+    score: "ENG 257/3 (20 ov) | IND 201/8 (20 ov)",
+    scores: [
+      { team: "ENG", score: "257/3", overs: "20" },
+      { team: "IND", score: "201/8", overs: "20" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "eng-ind-2026-odi-1-result",
+    matchNo: "1st ODI",
+    teams: ["England", "India"],
+    startISO: "2026-07-14T13:30:00.000Z",
+    venue: "Edgbaston, Birmingham",
+    url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/england-vs-india-1st-odi-1496579/full-scorecard",
+    state: "Finished",
+    status: "India won by 6 wickets (with 28 balls remaining)",
+    score: "ENG 258 | IND 262/4 (45.2 ov)",
+    scores: [
+      { team: "ENG", score: "258", overs: "" },
+      { team: "IND", score: "262/4", overs: "45.2" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "eng-ind-2026-odi-2-result",
+    matchNo: "2nd ODI",
+    teams: ["England", "India"],
+    startISO: "2026-07-16T13:30:00.000Z",
+    venue: "Sophia Gardens, Cardiff",
+    url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/england-vs-india-2nd-odi-1496580/full-scorecard",
+    state: "Finished",
+    status: "England won by 4 wickets (with 35 balls remaining)",
+    score: "IND 233 | ENG 235/6 (44.1 ov)",
+    scores: [
+      { team: "IND", score: "233", overs: "" },
+      { team: "ENG", score: "235/6", overs: "44.1" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "eng-ind-2026-odi-3-result",
+    matchNo: "3rd ODI",
+    teams: ["England", "India"],
+    startISO: "2026-07-19T13:30:00.000Z",
+    venue: "Lord's, London",
+    url: "https://www.espncricinfo.com/series/india-in-england-2026-1496488/england-vs-india-3rd-odi-1496581/full-scorecard",
+    state: "Finished",
+    status: "England won by 27 runs",
+    score: "ENG 387/3 (50 ov) | IND 360/7 (50 ov)",
+    scores: [
+      { team: "ENG", score: "387/3", overs: "50" },
+      { team: "IND", score: "360/7", overs: "50" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "zim-ind-2026-t20-1-result",
+    matchNo: "1st T20I",
+    teams: ["Zimbabwe", "India"],
+    startISO: "2026-07-23T12:00:00.000Z",
+    venue: "Harare Sports Club, Harare",
+    url: "https://www.espncricinfo.com/series/india-in-zimbabwe-2026-1530058/zimbabwe-vs-india-1st-t20i-1530060/full-scorecard",
+    state: "Finished",
+    status: "India won by 7 wickets (with 40 balls remaining)",
+    score: "ZIM 125/7 (20 ov) | IND 126/3 (13.2 ov)",
+    scores: [
+      { team: "ZIM", score: "125/7", overs: "20" },
+      { team: "IND", score: "126/3", overs: "13.2" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "zim-ind-2026-t20-2-result",
+    matchNo: "2nd T20I",
+    teams: ["Zimbabwe", "India"],
+    startISO: "2026-07-25T12:00:00.000Z",
+    venue: "Harare Sports Club, Harare",
+    url: "https://www.espncricinfo.com/series/india-in-zimbabwe-2026-1530058/zimbabwe-vs-india-2nd-t20i-1530061/full-scorecard",
+    state: "Finished",
+    status: "India won by 90 runs",
+    score: "IND 219/5 (20 ov) | ZIM 129 (17.5 ov)",
+    scores: [
+      { team: "IND", score: "219/5", overs: "20" },
+      { team: "ZIM", score: "129", overs: "17.5" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "zim-ind-2026-t20-3-result",
+    matchNo: "3rd T20I",
+    teams: ["Zimbabwe", "India"],
+    startISO: "2026-07-26T12:00:00.000Z",
+    venue: "Harare Sports Club, Harare",
+    url: "https://www.espncricinfo.com/series/india-in-zimbabwe-2026-1530058/zimbabwe-vs-india-3rd-t20i-1530062/full-scorecard",
+    state: "Finished",
+    status: "India won by 35 runs",
+    score: "IND 192/5 (20 ov) | ZIM 157/7 (20 ov)",
+    scores: [
+      { team: "IND", score: "192/5", overs: "20" },
+      { team: "ZIM", score: "157/7", overs: "20" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "sl-ind-2026-test-1-result",
+    matchNo: "1st Test",
+    teams: ["Sri Lanka", "India"],
+    startISO: "2026-08-15T04:30:00.000Z",
+    endISO: "2026-08-19T11:30:00.000Z",
+    venue: "Galle",
+    url: "https://www.espncricinfo.com/series/india-in-sri-lanka-2026-1543999/sri-lanka-vs-india-1st-test-1544001/full-scorecard",
+    state: "Finished",
+    status: "India won by 165 runs",
+    score: "IND 462 & 193 | SL 284 & 206",
+    scores: [
+      { team: "IND", score: "462 & 193", overs: "" },
+      { team: "SL", score: "284 & 206", overs: "" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "sl-ind-2026-test-2-result",
+    matchNo: "2nd Test",
+    teams: ["Sri Lanka", "India"],
+    startISO: "2026-08-23T04:30:00.000Z",
+    endISO: "2026-08-27T11:30:00.000Z",
+    venue: "Colombo (SSC)",
+    url: "https://www.espncricinfo.com/series/india-in-sri-lanka-2026-1543999/sri-lanka-vs-india-2nd-test-1544002/full-scorecard",
+    state: "Finished",
+    status: "Match drawn",
+    score: "IND 503/9d | SL 290 & 429/9d (f/o)",
+    scores: [
+      { team: "IND", score: "503/9d", overs: "" },
+      { team: "SL", score: "290 & 429/9d", overs: "" }
+    ],
+    playerOfMatch: ""
   }
 ];
 
+// Completed Tests live in TEST_RESULT_FIXTURES; the Lord's Test (27-31 Aug) is in progress and
+// comes from the live Cricbuzz scrape, so only genuinely upcoming Tests belong here.
 const TEST_CHAMPIONSHIP_FIXTURES = [
-  {
-    id: "wtc-eng-nz-2026-3",
-    matchNo: "3rd Test",
-    teams: ["England", "New Zealand"],
-    startISO: "2026-06-25T10:00:00.000Z",
-    endISO: "2026-06-29T17:00:00.000Z",
-    venue: "Trent Bridge, Nottingham"
-  },
-  {
-    id: "wtc-wi-sl-2026-1",
-    matchNo: "1st Test",
-    teams: ["West Indies", "Sri Lanka"],
-    startISO: "2026-06-25T14:00:00.000Z",
-    endISO: "2026-06-29T21:00:00.000Z",
-    venue: "Sir Vivian Richards Stadium, North Sound, Antigua"
-  },
-  {
-    id: "wtc-wi-sl-2026-2",
-    matchNo: "2nd Test",
-    teams: ["West Indies", "Sri Lanka"],
-    startISO: "2026-07-03T14:00:00.000Z",
-    endISO: "2026-07-07T21:00:00.000Z",
-    venue: "Sir Vivian Richards Stadium, North Sound, Antigua"
-  },
-  {
-    id: "wtc-aus-ban-2026-1",
-    matchNo: "1st Test",
-    teams: ["Australia", "Bangladesh"],
-    startISO: "2026-08-13T00:00:00.000Z",
-    endISO: "2026-08-17T23:59:00.000Z",
-    venue: "Marrara Oval, Darwin",
-    timeTBA: true
-  },
-  {
-    id: "wtc-aus-ban-2026-2",
-    matchNo: "2nd Test",
-    teams: ["Australia", "Bangladesh"],
-    startISO: "2026-08-22T00:00:00.000Z",
-    endISO: "2026-08-26T23:59:00.000Z",
-    venue: "Great Barrier Reef Arena, Mackay",
-    timeTBA: true
-  },
-  {
-    id: "wtc-eng-pak-2026-1",
-    matchNo: "1st Test",
-    teams: ["England", "Pakistan"],
-    startISO: "2026-08-19T00:00:00.000Z",
-    endISO: "2026-08-23T23:59:00.000Z",
-    venue: "Headingley, Leeds",
-    url: "https://www.espncricinfo.com/series/pakistan-tour-in-england-2026-1496563",
-    timeTBA: true
-  },
-  {
-    id: "wtc-eng-pak-2026-2",
-    matchNo: "2nd Test",
-    teams: ["England", "Pakistan"],
-    startISO: "2026-08-27T00:00:00.000Z",
-    endISO: "2026-08-31T23:59:00.000Z",
-    venue: "Lord's, London",
-    url: "https://www.espncricinfo.com/series/pakistan-tour-in-england-2026-1496563",
-    timeTBA: true
-  },
   {
     id: "wtc-eng-pak-2026-3",
     matchNo: "3rd Test",
     teams: ["England", "Pakistan"],
-    startISO: "2026-09-09T00:00:00.000Z",
-    endISO: "2026-09-13T23:59:00.000Z",
+    startISO: "2026-09-09T10:00:00.000Z",
+    endISO: "2026-09-13T17:00:00.000Z",
     venue: "Edgbaston, Birmingham",
-    url: "https://www.espncricinfo.com/series/pakistan-tour-in-england-2026-1496563",
-    timeTBA: true
+    url: "https://www.espncricinfo.com/series/pakistan-tour-in-england-2026-1496563"
   }
 ];
 
@@ -173,75 +345,93 @@ const TEST_RESULT_FIXTURES = [
     ],
     playerOfMatch: "Daryl Mitchell",
     endISO: "2026-06-29T17:00:00.000Z"
+  },
+  {
+    id: "wtc-wi-sl-2026-1-result",
+    matchNo: "1st Test",
+    teams: ["West Indies", "Sri Lanka"],
+    startISO: "2026-06-25T14:00:00.000Z",
+    endISO: "2026-06-28T21:00:00.000Z",
+    venue: "Sir Vivian Richards Stadium, North Sound, Antigua",
+    state: "Finished",
+    status: "West Indies won by an innings and 217 runs",
+    score: "SL 308 & 101 | WI 626/9d",
+    scores: [
+      { team: "SL", score: "308 & 101", overs: "" },
+      { team: "WI", score: "626/9d", overs: "" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "wtc-wi-sl-2026-2-result",
+    matchNo: "2nd Test",
+    teams: ["West Indies", "Sri Lanka"],
+    startISO: "2026-07-03T14:00:00.000Z",
+    endISO: "2026-07-07T21:00:00.000Z",
+    venue: "Sir Vivian Richards Stadium, North Sound, Antigua",
+    state: "Finished",
+    status: "Match drawn",
+    score: "SL 549/9d & 251/9d | WI 499 & 109/0",
+    scores: [
+      { team: "SL", score: "549/9d & 251/9d", overs: "" },
+      { team: "WI", score: "499 & 109/0", overs: "" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "wtc-aus-ban-2026-1-result",
+    matchNo: "1st Test",
+    teams: ["Australia", "Bangladesh"],
+    startISO: "2026-08-13T00:00:00.000Z",
+    endISO: "2026-08-16T23:59:00.000Z",
+    venue: "Marrara Oval, Darwin",
+    state: "Finished",
+    status: "Bangladesh won by 9 wickets",
+    score: "AUS 198 & 284 | BAN 426 & 57/1",
+    scores: [
+      { team: "AUS", score: "198 & 284", overs: "" },
+      { team: "BAN", score: "426 & 57/1", overs: "" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "wtc-eng-pak-2026-1-result",
+    matchNo: "1st Test",
+    teams: ["England", "Pakistan"],
+    startISO: "2026-08-19T00:00:00.000Z",
+    endISO: "2026-08-21T23:59:00.000Z",
+    venue: "Headingley, Leeds",
+    url: "https://www.espncricinfo.com/series/pakistan-tour-in-england-2026-1496563",
+    state: "Finished",
+    status: "England won by an innings and 103 runs",
+    score: "PAK 171 & 135 | ENG 409",
+    scores: [
+      { team: "PAK", score: "171 & 135", overs: "" },
+      { team: "ENG", score: "409", overs: "" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "wtc-aus-ban-2026-2-result",
+    matchNo: "2nd Test",
+    teams: ["Australia", "Bangladesh"],
+    startISO: "2026-08-22T00:00:00.000Z",
+    endISO: "2026-08-23T23:59:00.000Z",
+    venue: "Great Barrier Reef Arena, Mackay",
+    state: "Finished",
+    status: "Australia won by an innings and 51 runs",
+    score: "BAN 64 & 95 | AUS 210",
+    scores: [
+      { team: "BAN", score: "64 & 95", overs: "" },
+      { team: "AUS", score: "210", overs: "" }
+    ],
+    playerOfMatch: ""
   }
 ];
 
-const WOMENS_FUTURE_FIXTURES = [
-  { id: "wwc-2026-19", matchNo: "19th Match - Group B", teams: ["New Zealand Women", "Scotland Women"], startISO: "2026-06-23T09:30:00.000Z", venue: "County Ground, Bristol" },
-  { id: "wwc-2026-20", matchNo: "20th Match - Group B", teams: ["Ireland Women", "Sri Lanka Women"], startISO: "2026-06-23T13:30:00.000Z", venue: "England" },
-  {
-    id: "wwc-2026-23",
-    matchNo: "23rd Match - Group A",
-    teams: ["India Women", "Bangladesh Women"],
-    startISO: "2026-06-25T13:30:00.000Z",
-    venue: "Emirates Old Trafford, Manchester",
-    url: "https://www.cricbuzz.com/live-cricket-scores/121961/indw-vs-banw-23rd-match-group-a-icc-womens-t20-world-cup-2026"
-  },
-  {
-    id: "wwc-2026-26",
-    matchNo: "26th Match - Group A",
-    teams: ["Pakistan Women", "Netherlands Women"],
-    startISO: "2026-06-27T09:30:00.000Z",
-    venue: "County Ground, Bristol",
-    url: "https://www.cricbuzz.com/live-cricket-scores/121978/pakw-vs-nedw-26th-match-group-a-icc-womens-t20-world-cup-2026"
-  },
-  {
-    id: "wwc-2026-27",
-    matchNo: "27th Match - Group B",
-    teams: ["West Indies Women", "Ireland Women"],
-    startISO: "2026-06-27T13:30:00.000Z",
-    venue: "County Ground, Bristol",
-    url: "https://www.cricbuzz.com/live-cricket-scores/121983/wiw-vs-irew-27th-match-group-b-icc-womens-t20-world-cup-2026"
-  },
-  {
-    id: "wwc-2026-28",
-    matchNo: "28th Match - Group B",
-    teams: ["England Women", "New Zealand Women"],
-    startISO: "2026-06-27T17:30:00.000Z",
-    venue: "Kennington Oval, London",
-    url: "https://www.cricbuzz.com/live-cricket-scores/121994/engw-vs-nzw-28th-match-group-b-icc-womens-t20-world-cup-2026"
-  },
-  {
-    id: "wwc-2026-29",
-    matchNo: "29th Match - Group A",
-    teams: ["South Africa Women", "Bangladesh Women"],
-    startISO: "2026-06-28T09:30:00.000Z",
-    venue: "Lord's, London",
-    url: "https://www.cricbuzz.com/live-cricket-scores/122005/rsaw-vs-banw-29th-match-group-a-icc-womens-t20-world-cup-2026"
-  },
-  {
-    id: "wwc-2026-30",
-    matchNo: "30th Match - Group A",
-    teams: ["Australia Women", "India Women"],
-    startISO: "2026-06-28T13:30:00.000Z",
-    venue: "Lord's, London",
-    url: "https://www.cricbuzz.com/live-cricket-scores/122011/ausw-vs-indw-30th-match-group-a-icc-womens-t20-world-cup-2026"
-  },
-  {
-    id: "wwc-2026-32",
-    matchNo: "32nd Match - 2nd Semi-final",
-    teams: ["England Women", "South Africa Women"],
-    startISO: "2026-07-02T13:30:00.000Z",
-    venue: "Kennington Oval, London"
-  },
-  {
-    id: "wwc-2026-33",
-    matchNo: "33rd Match - Final",
-    teams: ["Australia Women", "England Women"],
-    startISO: "2026-07-05T13:30:00.000Z",
-    venue: "Lord's, London"
-  }
-];
+// The 2026 tournament finished on 5 Jul 2026 (Australia beat England in the final),
+// so there are no upcoming fixtures left; every match now lives in WOMENS_RESULT_FIXTURES.
+const WOMENS_FUTURE_FIXTURES = [];
 
 function scheduledFixtureState(fixture, now = Date.now()) {
   const start = Date.parse(fixture.startISO || "");
@@ -335,13 +525,16 @@ const WOMENS_RESULT_FIXTURES = [
     id: "wwc-2026-25-result",
     matchNo: "25th Match - Group B",
     teams: ["Scotland Women", "Sri Lanka Women"],
-    startISO: "2026-06-25T17:30:00.000Z",
-    venue: "England",
+    startISO: "2026-06-26T17:30:00.000Z",
+    venue: "Emirates Old Trafford, Manchester",
     url: "https://www.cricbuzz.com/live-cricket-scores/121972/scow-vs-slw-25th-match-group-b-icc-womens-t20-world-cup-2026",
     state: "Finished",
     status: "Sri Lanka Women won by 3 wickets",
-    score: "Score not available",
-    scores: [],
+    score: "SCOW 151/6 (20 ov) | SLW 154/7 (19.5 ov)",
+    scores: [
+      { team: "SCOW", score: "151/6", overs: "20" },
+      { team: "SLW", score: "154/7", overs: "19.5" }
+    ],
     playerOfMatch: ""
   },
   {
@@ -353,8 +546,11 @@ const WOMENS_RESULT_FIXTURES = [
     url: "https://www.cricbuzz.com/live-cricket-scores/121978/pakw-vs-nedw-26th-match-group-a-icc-womens-t20-world-cup-2026",
     state: "Finished",
     status: "Pakistan Women won by 37 runs",
-    score: "Score not available",
-    scores: [],
+    score: "PAKW 126/6 (20 ov) | NEDW 89",
+    scores: [
+      { team: "PAKW", score: "126/6", overs: "20" },
+      { team: "NEDW", score: "89", overs: "" }
+    ],
     playerOfMatch: ""
   },
   {
@@ -366,8 +562,11 @@ const WOMENS_RESULT_FIXTURES = [
     url: "https://www.cricbuzz.com/live-cricket-scores/121983/wiw-vs-irew-27th-match-group-b-icc-womens-t20-world-cup-2026",
     state: "Finished",
     status: "Ireland Women won by 6 wickets",
-    score: "Score not available",
-    scores: [],
+    score: "WIW 128/7 (20 ov) | IREW 129/4 (18.1 ov)",
+    scores: [
+      { team: "WIW", score: "128/7", overs: "20" },
+      { team: "IREW", score: "129/4", overs: "18.1" }
+    ],
     playerOfMatch: ""
   },
   {
@@ -405,7 +604,7 @@ const WOMENS_RESULT_FIXTURES = [
     id: "wwc-2026-32-result",
     matchNo: "32nd Match - 2nd Semi-final",
     teams: ["England Women", "South Africa Women"],
-    startISO: "2026-07-02T13:30:00.000Z",
+    startISO: "2026-07-02T17:30:00.000Z",
     venue: "Kennington Oval, London",
     state: "Finished",
     status: "England Women won by 40 runs",
@@ -415,6 +614,102 @@ const WOMENS_RESULT_FIXTURES = [
       { team: "RSAW", score: "129/8", overs: "20" }
     ],
     playerOfMatch: "Nat Sciver-Brunt"
+  },
+  {
+    id: "wwc-2026-19-result",
+    matchNo: "19th Match - Group B",
+    teams: ["New Zealand Women", "Scotland Women"],
+    startISO: "2026-06-23T09:30:00.000Z",
+    venue: "County Ground, Bristol",
+    url: "https://www.cricbuzz.com/live-cricket-scores/121928/nzw-vs-scow-19th-match-group-b-icc-womens-t20-world-cup-2026",
+    state: "Finished",
+    status: "New Zealand Women won by 6 wickets",
+    score: "SCOW 131/7 (20 ov) | NZW 132/4 (18.2 ov)",
+    scores: [
+      { team: "SCOW", score: "131/7", overs: "20" },
+      { team: "NZW", score: "132/4", overs: "18.2" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "wwc-2026-20-result",
+    matchNo: "20th Match - Group B",
+    teams: ["Ireland Women", "Sri Lanka Women"],
+    startISO: "2026-06-23T13:30:00.000Z",
+    venue: "County Ground, Bristol",
+    url: "https://www.cricbuzz.com/live-cricket-scores/121934/slw-vs-irew-20th-match-group-b-icc-womens-t20-world-cup-2026",
+    state: "Finished",
+    status: "Sri Lanka Women won by 9 wickets",
+    score: "IREW 130/5 (20 ov) | SLW 134/1 (15.3 ov)",
+    scores: [
+      { team: "IREW", score: "130/5", overs: "20" },
+      { team: "SLW", score: "134/1", overs: "15.3" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "wwc-2026-23-result",
+    matchNo: "23rd Match - Group A",
+    teams: ["India Women", "Bangladesh Women"],
+    startISO: "2026-06-25T13:30:00.000Z",
+    venue: "Emirates Old Trafford, Manchester",
+    url: "https://www.cricbuzz.com/live-cricket-scores/121961/indw-vs-banw-23rd-match-group-a-icc-womens-t20-world-cup-2026",
+    state: "Finished",
+    status: "India Women won by 5 wickets",
+    score: "BANW 136/8 (20 ov) | INDW 139/5 (16.5 ov)",
+    scores: [
+      { team: "BANW", score: "136/8", overs: "20" },
+      { team: "INDW", score: "139/5", overs: "16.5" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "wwc-2026-29-result",
+    matchNo: "29th Match - Group A",
+    teams: ["South Africa Women", "Bangladesh Women"],
+    startISO: "2026-06-28T09:30:00.000Z",
+    venue: "Lord's, London",
+    url: "https://www.cricbuzz.com/live-cricket-scores/122005/rsaw-vs-banw-29th-match-group-a-icc-womens-t20-world-cup-2026",
+    state: "Finished",
+    status: "South Africa Women won by 4 wickets",
+    score: "BANW 117/5 (20 ov) | RSAW 118/6 (19.2 ov)",
+    scores: [
+      { team: "BANW", score: "117/5", overs: "20" },
+      { team: "RSAW", score: "118/6", overs: "19.2" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "wwc-2026-30-result",
+    matchNo: "30th Match - Group A",
+    teams: ["Australia Women", "India Women"],
+    startISO: "2026-06-28T13:30:00.000Z",
+    venue: "Lord's, London",
+    url: "https://www.cricbuzz.com/live-cricket-scores/122011/ausw-vs-indw-30th-match-group-a-icc-womens-t20-world-cup-2026",
+    state: "Finished",
+    status: "Australia Women won by 6 wickets",
+    score: "INDW 170/4 (20 ov) | AUSW 172/4 (19 ov)",
+    scores: [
+      { team: "INDW", score: "170/4", overs: "20" },
+      { team: "AUSW", score: "172/4", overs: "19" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "wwc-2026-33-result",
+    matchNo: "33rd Match - Final",
+    teams: ["Australia Women", "England Women"],
+    startISO: "2026-07-05T14:30:00.000Z",
+    venue: "Lord's, London",
+    url: "https://www.cricbuzz.com/live-cricket-scores/122033/engw-vs-ausw-final-icc-womens-t20-world-cup-2026",
+    state: "Finished",
+    status: "Australia Women won by 7 wickets",
+    score: "ENGW 150/4 (20 ov) | AUSW 153/3 (17.1 ov)",
+    scores: [
+      { team: "ENGW", score: "150/4", overs: "20" },
+      { team: "AUSW", score: "153/3", overs: "17.1" }
+    ],
+    playerOfMatch: ""
   }
 ];
 
