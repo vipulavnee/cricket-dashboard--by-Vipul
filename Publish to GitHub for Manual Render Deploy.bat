@@ -27,7 +27,7 @@ echo Uploaded to GitHub successfully.
 echo Render should auto-deploy now.
 echo.
 echo Cricket URL:
-echo https://cricket.onrender.com/
+echo https://womens-t20-world-cup-dashboard.onrender.com/
 echo.
 echo Other Sports URL:
 echo https://other-sports-dashboard.onrender.com/other-sports-dashboard.html
