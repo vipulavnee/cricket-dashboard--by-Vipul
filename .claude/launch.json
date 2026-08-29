@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cricket-dashboard",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server-cricket.js"],
+      "port": 3002
+    },
+    {
+      "name": "other-sports-dashboard",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server-other-sports.js"],
+      "port": 3003
+    }
+  ]
+}

@@ -86,13 +86,15 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,
 <body>
 <div class="page">
   <div class="topbar">
-    <div class="brand"><div class="logo">S</div><div><div class="title">Vipul's Sports Dashboard</div><div class="subtitle" id="subtitle">Football World Cup + Wimbledon + Indian Men</div></div></div>
+    <div class="brand"><div class="logo">S</div><div><div class="title">Vipul's Sports Dashboard</div><div class="subtitle" id="subtitle">Football World Cup + Wimbledon + US Open + Indian Men</div></div></div>
     <div class="actions">
       <select class="select" id="sportSelect" onchange="changeSport(this.value)">
         <option value="Football">Football World Cup</option>
         <option value="CricketIndiaMen">Indian Men Cricket</option>
         <option value="TennisMen">Wimbledon Gentlemen's Singles</option>
         <option value="TennisWomen">Wimbledon Ladies' Singles</option>
+        <option value="USOpenMen">US Open Men's Singles</option>
+        <option value="USOpenWomen">US Open Women's Singles</option>
       </select>
       <div class="status warn" id="apiStatus">● Loading</div>
       <button class="btn" onclick="loadData()">↻ Refresh</button>
@@ -106,9 +108,14 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,
 
 <script>
 const params=new URLSearchParams(location.search);
-let allEvents=[],activeSport=params.get("sport")||"Football",activeFilter=params.get("filter")||"Upcoming",selectedId="",userSelected=false,inFlight=false,refreshTimer=null;
-if(activeSport==="All")activeSport="Football";
-if(activeFilter==="All")activeFilter="Upcoming";
+let allEvents=[],activeSport=params.get("sport")||"USOpenMen",activeFilter=params.get("filter")||"Stars",selectedId="",userSelected=false,inFlight=false,refreshTimer=null;
+if(activeSport==="All")activeSport="USOpenMen";
+if(activeFilter==="All")activeFilter="Stars";
+// Indian Men cricket has no Stars tab, and starFilterEvents() yields nothing for cricket,
+// so landing there on "Stars" would render an empty view before renderMain can correct it.
+function supportsStars(sport){return sport!=="CricketIndiaMen"}
+function defaultFilterFor(sport){return supportsStars(sport)?"Stars":"Upcoming"}
+if(activeFilter==="Stars"&&!supportsStars(activeSport))activeFilter="Upcoming";
 const $=id=>document.getElementById(id);
 const apiBase=location.protocol==="file:"?"http://localhost:3003":"";
 const FOOTBALL_STARS=["Brazil","Argentina","Germany","France","Spain","England","Italy","Uruguay"];
@@ -122,9 +129,12 @@ function stateOf(e){return e?.state||"Unknown"}
 function parseTime(e){const d=new Date(e?.startISO||0);return Number.isFinite(d.getTime())?d:new Date(0)}
 function isTennisGents(e){const s=String(e.stage||"").toLowerCase();return e.sport==="Tennis"&&(s.startsWith("men's singles")||s.startsWith("gentlemen's singles"))}
 function isTennisLadies(e){const s=String(e.stage||"").toLowerCase();return e.sport==="Tennis"&&(s.startsWith("women's singles")||s.startsWith("ladies' singles"))}
-function sportEvents(){if(activeSport==="All")return allEvents;if(activeSport==="TennisMen")return allEvents.filter(isTennisGents);if(activeSport==="TennisWomen")return allEvents.filter(isTennisLadies);if(activeSport==="CricketIndiaMen")return allEvents.filter(e=>e.sport==="Cricket"&&e.competition==="Indian Men");return allEvents.filter(e=>e.sport===activeSport)}
-function eventLabel(){return activeSport==="Football"?"Football World Cup":activeSport==="CricketIndiaMen"?"Indian Men Cricket":activeSport==="TennisMen"?"Wimbledon Gentlemen's Singles":activeSport==="TennisWomen"?"Wimbledon Ladies' Singles":"All Sports"}
-function isTennisTab(){return activeSport==="TennisMen"||activeSport==="TennisWomen"}
+const TENNIS_TABS={TennisMen:{competition:"Wimbledon",draw:isTennisGents,label:"Wimbledon Gentlemen's Singles"},TennisWomen:{competition:"Wimbledon",draw:isTennisLadies,label:"Wimbledon Ladies' Singles"},USOpenMen:{competition:"US Open",draw:isTennisGents,label:"US Open Men's Singles"},USOpenWomen:{competition:"US Open",draw:isTennisLadies,label:"US Open Women's Singles"}};
+function tennisTab(){return TENNIS_TABS[activeSport]||null}
+function activeTennisCompetition(){return tennisTab()?.competition||""}
+function sportEvents(){if(activeSport==="All")return allEvents;const tab=tennisTab();if(tab)return allEvents.filter(e=>tab.draw(e)&&e.competition===tab.competition);if(activeSport==="CricketIndiaMen")return allEvents.filter(e=>e.sport==="Cricket"&&e.competition==="Indian Men");return allEvents.filter(e=>e.sport===activeSport)}
+function eventLabel(){const tab=tennisTab();if(tab)return tab.label;return activeSport==="Football"?"Football World Cup":activeSport==="CricketIndiaMen"?"Indian Men Cricket":"All Sports"}
+function isTennisTab(){return Boolean(tennisTab())}
 function subtitleText(){return isTennisTab()?"Live data":eventLabel()+" • Live data"}
 function isFuture(e){return stateOf(e)==="Upcoming"&&parseTime(e).getTime()>Date.now()-30*60*1000}
 function sortEvents(list){return [...list].sort((a,b)=>{if(stateOf(a)==="Live"!== (stateOf(b)==="Live"))return stateOf(a)==="Live"?-1:1;if(isFuture(a)&&isFuture(b))return parseTime(a)-parseTime(b);if(isFuture(a)!==isFuture(b))return isFuture(a)?-1:1;return parseTime(b)-parseTime(a)})}
@@ -140,7 +150,7 @@ function primary(){
   if(activeSport==="CricketIndiaMen")return live[0]||latestFinished||nextUpcoming||list[0];
   return starLive||live[0]||nextUpcoming||latestFinished||list[0];
 }
-function changeSport(v){activeSport=v;activeFilter="Upcoming";selectedId="";userSelected=false;$("subtitle").textContent=subtitleText();render();scheduleRefresh()}
+function changeSport(v){activeSport=v;activeFilter=defaultFilterFor(v);selectedId="";userSelected=false;$("subtitle").textContent=subtitleText();render();scheduleRefresh()}
 function setFilter(v){activeFilter=v;render()}
 function selectEvent(id){selectedId=id;userSelected=true;render()}
 function fmtTime(e){const d=parseTime(e);return d.getTime()?d.toLocaleString([], {weekday:"short", day:"numeric", month:"short", hour:"numeric", minute:"2-digit"}):"TBD"}
@@ -478,7 +488,7 @@ function starTag(e){
 }
 function footballRoundRank(e){return ({G:0,R32:1,R16:2,Q:3,S:4,Final:5,"3P":6}[e?.roundCode]??99)}
 function nextRoundLineup(){
-  if(activeSport==="TennisMen"||activeSport==="TennisWomen")return tennisNextRoundLineup();
+  if(isTennisTab())return tennisNextRoundLineup();
   const football=sportEvents().filter(e=>e.sport==="Football"&&stateOf(e)!=="Finished"&&footballRoundRank(e)>0&&footballRoundRank(e)<99);
   if(!football.length)return[];
   const earliest=Math.min(...football.map(footballRoundRank));
@@ -514,11 +524,11 @@ function tennisNextRoundLineup(){
     const ready=stateOf(a)==="Finished"&&stateOf(b)==="Finished"&&(a.teams||[]).some(t=>t.winner)&&(b.teams||[]).some(t=>t.winner);
     const status=ready?"Lineup ready":"Awaiting winners";
     const scheduledMatch=scheduled.find(e=>e.roundMatchNumber===Math.floor(i/2)+1)||scheduled[Math.floor(i/2)];
-    out.push({synthetic:true,id:`tennis-next-${activeSport}-${roundNo}-${i}`,sport:"Tennis",competition:"Wimbledon",name,lineupName:name,lineupLabel:`${draw} • ${nextRound} • Lineup ${Math.floor(i/2)+1}`,state:"Upcoming",status,stage:nextRound,startISO:scheduledMatch?.startISO||"",teams:[],detail:status});
+    out.push({synthetic:true,id:`tennis-next-${activeSport}-${roundNo}-${i}`,sport:"Tennis",competition:activeTennisCompetition(),name,lineupName:name,lineupLabel:`${draw} • ${nextRound} • Lineup ${Math.floor(i/2)+1}`,state:"Upcoming",status,stage:nextRound,startISO:scheduledMatch?.startISO||"",teams:[],detail:status});
   }
   return out;
 }
-function hasNextRoundTab(){return activeSport==="Football"||activeSport==="TennisMen"||activeSport==="TennisWomen"}
+function hasNextRoundTab(){return activeSport==="Football"||isTennisTab()}
 function cleanFootballStage(stage=""){
   return String(stage||"")
     .replace(/\bFIFA\s+World\s+Cup\b,?\s*/gi,"")
@@ -533,11 +543,12 @@ function cleanFootballStage(stage=""){
 function cleanTennisStage(stage=""){
   if(!isTennisTab())return stage;
   return String(stage)
-    .replace(/Wimbledon\s*•\s*/gi,"")
-    .replace(/Men'?s Singles\s*•\s*/gi,"")
-    .replace(/Women'?s Singles\s*•\s*/gi,"")
-    .replace(/Gentlemen'?s Singles\s*•\s*/gi,"")
-    .replace(/Ladies'? Singles\s*•\s*/gi,"")
+    .replace(/(?:Wimbledon|US Open)\s*•\s*/gi,"")
+    // One alternation with a leading \b: separate passes let "Men's Singles" match inside
+    // "Women's Singles"/"Gentlemen's Singles", leaving "WoRound 1" and "GentleFinal".
+    .replace(/\b(?:Gentlemen'?s|Ladies'?|Women'?s|Men'?s)\s+Singles\s*•\s*/gi,"")
+    .replace(/\b(?:Gentlemen'?s|Ladies'?|Women'?s|Men'?s)\s+Doubles\s*•\s*/gi,"")
+    .replace(/\bMixed Doubles\s*•\s*/gi,"")
     .replace(/\bRound\s*5\b/gi,"Quarterfinal")
     .replace(/\bQuarterfinals\b/gi,"Quarterfinal")
     .replace(/\bSemifinals\b/gi,"Semifinal")

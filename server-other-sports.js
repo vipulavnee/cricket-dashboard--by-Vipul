@@ -82,6 +82,19 @@ const WIMBLEDON_GRAPHQL = "https://www.wimbledon.com/graphql";
 const WIMBLEDON_AUTH = "77d2d900-b41b-4a6a-8700-b98f80bef920";
 const ENABLE_WIMBLEDON_ENRICHMENT = process.env.ENABLE_WIMBLEDON_ENRICHMENT !== "0";
 
+// Grand slams we surface from the ESPN tennis scoreboards. Wimbledon additionally gets
+// point-by-point and break-stat enrichment from its own GraphQL feed; the US Open has no
+// public equivalent, so it runs on ESPN data alone.
+const TENNIS_TOURNAMENTS = [
+  { name: "Wimbledon", test: /wimbledon/i },
+  { name: "US Open", test: /\bu\.?s\.?\s*open\b/i }
+];
+
+function tennisTournamentFor(event = {}) {
+  const text = `${event.name || ""} ${event.shortName || ""}`;
+  return TENNIS_TOURNAMENTS.find(tournament => tournament.test.test(text)) || null;
+}
+
 function ymd(date) {
   return date.toISOString().slice(0, 10).replace(/-/g, "");
 }
@@ -375,7 +388,8 @@ function tennisDedupeKey(item) {
     .filter(Boolean)
     .sort()
     .join("|");
-  if (people) return `tennis-${people}-${tennisRoundCode(item.stage, item.stage) || item.stage || ""}`;
+  // Competition is part of the key: the same pairing can recur at the same round in another slam.
+  if (people) return `tennis-${item.competition || ""}-${people}-${tennisRoundCode(item.stage, item.stage) || item.stage || ""}`;
   return "";
 }
 
@@ -765,7 +779,7 @@ function tennisServingFlag(c) {
     .some(value => value === true || value === "true" || value === 1 || value === "1");
 }
 
-function normalizeTennisCompetition(comp, event, sourceLeague) {
+function normalizeTennisCompetition(comp, event, sourceLeague, competition = "Wimbledon") {
   const players = (comp.competitors || []).map(c => ({
     id: c.id,
     name: tennisName(c),
@@ -789,7 +803,7 @@ function normalizeTennisCompetition(comp, event, sourceLeague) {
   return {
     id: `tennis-${sourceLeague}-${comp.id}`,
     sport: "Tennis",
-    competition: "Wimbledon",
+    competition,
     name: seededNames.join(" vs "),
     shortName: seededShortNames.join(" vs "),
     state,
@@ -829,13 +843,19 @@ function tennisRoundCode(round = "", type = "") {
   return "";
 }
 
-function tennisDrawCode(stage = "") {
+// Wimbledon calls its draws Gentlemen's/Ladies'; the US Open uses Men's/Women's.
+function tennisDrawCode(stage = "", competition = "Wimbledon") {
   const text = String(stage).toLowerCase();
-  if (text.includes("women") && text.includes("single")) return "Ladies' Singles";
-  if (text.includes("men") && text.includes("single")) return "Gentlemen's Singles";
-  if (text.includes("women") && text.includes("double")) return "Ladies' Doubles";
-  if (text.includes("men") && text.includes("double")) return "Gentlemen's Doubles";
+  const wimbledon = competition === "Wimbledon";
   if (text.includes("mixed")) return "Mixed Doubles";
+  // "Ladies'" carries no "women", so it used to fall through to the generic "Tennis" label.
+  // Check ladies first: "women" contains "men", which would otherwise match the gents branch.
+  const ladies = text.includes("ladies") || text.includes("women");
+  const gents = !ladies && text.includes("men");
+  if (ladies && text.includes("single")) return wimbledon ? "Ladies' Singles" : "Women's Singles";
+  if (gents && text.includes("single")) return wimbledon ? "Gentlemen's Singles" : "Men's Singles";
+  if (ladies && text.includes("double")) return wimbledon ? "Ladies' Doubles" : "Women's Doubles";
+  if (gents && text.includes("double")) return wimbledon ? "Gentlemen's Doubles" : "Men's Doubles";
   return "Tennis";
 }
 
@@ -851,14 +871,15 @@ function withTennisLineupLabels(events) {
   const grouped = new Map();
   for (const event of events) {
     const base = tennisRoundCode(event.stage, event.stage) || "M";
-    const draw = tennisDrawCode(event.stage);
-    const key = `${draw}|${base}|${event.stage}`;
+    const draw = tennisDrawCode(event.stage, event.competition);
+    // Keyed by competition so Wimbledon and US Open rounds are numbered independently.
+    const key = `${event.competition || "Tennis"}|${draw}|${base}|${event.stage}`;
     if (!grouped.has(key)) grouped.set(key, []);
     grouped.get(key).push(event);
   }
 
   for (const [key, list] of grouped.entries()) {
-    const [draw, base] = key.split("|");
+    const [, draw, base] = key.split("|");
     list.sort((a, b) => a.sortTime - b.sortTime || String(a.name).localeCompare(String(b.name)));
     list.forEach((event, index) => {
       const roundLabel = tennisRoundLabel(base);
@@ -899,11 +920,12 @@ async function fetchTennis() {
     if (result.status !== "fulfilled") continue;
     const league = result.value.data?.leagues?.[0]?.slug || "tennis";
     for (const event of result.value.data?.events || []) {
-      if (!/wimbledon/i.test(event.name || event.shortName || "")) continue;
+      const tournament = tennisTournamentFor(event);
+      if (!tournament) continue;
       for (const grouping of event.groupings || []) {
         for (const comp of grouping.competitions || []) {
           if (!isMainDrawTennis(comp, { ...event, grouping: grouping.grouping })) continue;
-          rows.push(normalizeTennisCompetition(comp, { ...event, grouping: grouping.grouping }, league));
+          rows.push(normalizeTennisCompetition(comp, { ...event, grouping: grouping.grouping }, league, tournament.name));
         }
       }
     }
@@ -911,6 +933,9 @@ async function fetchTennis() {
   rows.push(...(wimbledonCompleted.rows || []));
   const wimbledonCompletedIds = wimbledonCompleted.matchIds || new Map();
   for (const row of rows) {
+    // Slamtracker data is Wimbledon-only; matching it by player pair alone would attach
+    // Wimbledon points to a US Open row for any player appearing in both draws.
+    if (row.competition !== "Wimbledon") continue;
     const keys = tennisPairKeys((row.teams || []).map(t => t.short || t.name));
     const enrichment = keys.map(key => wimbledonScores.get(key)).find(Boolean);
     if (enrichment) {
@@ -927,7 +952,7 @@ async function fetchTennis() {
     }
   }
   const recentFinished = rows
-    .filter(row => row.state === "Finished" && /singles/i.test(row.stage || ""))
+    .filter(row => row.competition === "Wimbledon" && row.state === "Finished" && /singles/i.test(row.stage || ""))
     .sort((a, b) => b.sortTime - a.sortTime);
   const finishedMatchIds = [...new Set(recentFinished.map(row => {
     const keys = tennisTeamPairKeys(row.teams || []);
