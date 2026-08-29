@@ -48,7 +48,7 @@ const TENNIS_URLS = [
 const CRICKET_API_URLS = [
   process.env.CRICKET_DASHBOARD_API_URL,
   "http://localhost:3002/api/cricket-dashboard-matches",
-  "https://womens-t20-world-cup-dashboard.onrender.com/api/cricket-dashboard-matches",
+  "https://cricket-dashboard-by-vipul.onrender.com/api/cricket-dashboard-matches",
   "https://vipul-s-cricket-dashboard.onrender.com/api/cricket-dashboard-matches",
   "https://vipuls-cricket-dashboard.onrender.com/api/cricket-dashboard-matches",
   "https://vipul-cricket-dashboard.onrender.com/api/cricket-dashboard-matches",
