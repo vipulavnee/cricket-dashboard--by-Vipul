@@ -48,6 +48,9 @@ const TENNIS_URLS = [
 const CRICKET_API_URLS = [
   process.env.CRICKET_DASHBOARD_API_URL,
   "http://localhost:3002/api/cricket-dashboard-matches",
+  // New short host first; the old one stays as a fallback so this keeps working
+  // both before and after the Render service is renamed.
+  "https://cricket.onrender.com/api/cricket-dashboard-matches",
   "https://womens-t20-world-cup-dashboard.onrender.com/api/cricket-dashboard-matches",
   "https://vipul-s-cricket-dashboard.onrender.com/api/cricket-dashboard-matches",
   "https://vipuls-cricket-dashboard.onrender.com/api/cricket-dashboard-matches",

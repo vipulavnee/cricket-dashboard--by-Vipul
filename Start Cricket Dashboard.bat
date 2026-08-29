@@ -3,7 +3,7 @@ title Start Cricket Dashboard
 set "APP_DIR=A:\..monthwise\dashboards\cricket"
 set "PORT=3002"
 set "LOCAL_URL=http://127.0.0.1:3002/cricket-dashboard.html"
-set "RENDER_URL=https://womens-t20-world-cup-dashboard.onrender.com/cricket-dashboard.html"
+set "RENDER_URL=https://cricket.onrender.com/"
 
 cd /d "%APP_DIR%"
 set "NODE_PATH=%APP_DIR%\node_modules"

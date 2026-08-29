@@ -22,7 +22,7 @@ echo.
 echo Uploaded to GitHub.
 echo Render should auto-deploy now.
 echo Wait 2-5 minutes, then hard-refresh the website.
-echo Cricket: https://womens-t20-world-cup-dashboard.onrender.com/cricket-dashboard.html
+echo Cricket: https://cricket.onrender.com/
 echo Other Sports: https://other-sports-dashboard.onrender.com/other-sports-dashboard.html
 pause
 exit /b 0
