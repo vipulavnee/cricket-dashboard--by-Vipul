@@ -81,10 +81,14 @@ const INDIA_CRICKET_FALLBACK = [
 const WIMBLEDON_GRAPHQL = "https://www.wimbledon.com/graphql";
 const WIMBLEDON_AUTH = "77d2d900-b41b-4a6a-8700-b98f80bef920";
 const ENABLE_WIMBLEDON_ENRICHMENT = process.env.ENABLE_WIMBLEDON_ENRICHMENT !== "0";
+const US_OPEN_STATS_BASE = "https://www.usopen.org/en_US/scores/stats";
+const ENABLE_US_OPEN_ENRICHMENT = process.env.ENABLE_US_OPEN_ENRICHMENT !== "0";
+const US_OPEN_BREAK_IMMEDIATE_LIMIT = 20;
+const usOpenStatsCache = new Map();
 
 // Grand slams we surface from the ESPN tennis scoreboards. Wimbledon additionally gets
-// point-by-point and break-stat enrichment from its own GraphQL feed; the US Open has no
-// public equivalent, so it runs on ESPN data alone.
+// point-by-point and break-stat enrichment from its own GraphQL feed. US Open break
+// stats come from the official IBM SlamTracker stats pages after strict pair matching.
 const TENNIS_TOURNAMENTS = [
   { name: "Wimbledon", test: /wimbledon/i },
   { name: "US Open", test: /\bu\.?s\.?\s*open\b/i }
@@ -413,6 +417,128 @@ function statPair(won, total) {
   if (won === null || won === undefined || won === "") return "";
   if (total === null || total === undefined || total === "") return String(won);
   return `${won}/${total}`;
+}
+
+function surnameKey(name = "") {
+  const clean = tennisPersonKey(name);
+  const parts = clean.split(/\s+/).filter(Boolean);
+  return parts[parts.length - 1] || clean;
+}
+
+function usOpenRoundNumber(row = {}) {
+  const stageText = String(row.stage || "");
+  const code = tennisRoundCode(stageText, stageText);
+  if (code === "Final") return 7;
+  if (code === "SF") return 6;
+  if (code === "QF") return 5;
+  const found = String(code).match(/^R(\d+)$/);
+  if (!found) {
+    const ordinal = stageText.match(/\b([1-4])(?:st|nd|rd|th)\s+round\b/i);
+    return ordinal ? Number(ordinal[1]) : 0;
+  }
+  const drawSize = Number(found[1]);
+  if (drawSize >= 128) return 1;
+  if (drawSize >= 64) return 2;
+  if (drawSize >= 32) return 3;
+  if (drawSize >= 16) return 4;
+  return 0;
+}
+
+function usOpenDrawPrefix(row = {}) {
+  const stage = String(row.stage || "").toLowerCase();
+  if (stage.includes("women") || stage.includes("ladies")) return 2;
+  return 1;
+}
+
+function usOpenCandidateIdsForRow(row = {}) {
+  const round = usOpenRoundNumber(row);
+  if (!round) return [];
+  const prefix = usOpenDrawPrefix(row);
+  const counts = { 1: 64, 2: 32, 3: 16, 4: 8, 5: 4, 6: 2, 7: 1 };
+  const count = counts[round] || 0;
+  return Array.from({ length: count }, (_, index) => `${prefix}${round}${String(index + 1).padStart(2, "0")}`);
+}
+
+function normalizeUsOpenHtml(html = "") {
+  return String(html)
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseUsOpenStatsPage(html = "", matchId = "") {
+  const text = normalizeUsOpenHtml(html);
+  if (!/\bBreak Points Won\b/i.test(text)) return null;
+  const statMatch = text.match(/(\d+\s*\/\s*\d+\s*\(\s*\d+\s*%\s*\))\s+Break Points Won\s+(\d+\s*\/\s*\d+\s*\(\s*\d+\s*%\s*\))/i);
+  if (!statMatch) return null;
+  const header = text.slice(0, Math.max(text.search(/\bOverall Stats\b/i), 800));
+  const nameMatches = [...header.matchAll(/\b([A-Z]\.\s+[A-Z][A-Za-z'’-]+(?:\s+[A-Z][A-Za-z'’-]+)*)\b/g)]
+    .map(match => match[1])
+    .filter(name => !/^(IBM|US Open|New York)$/i.test(name));
+  const players = [...new Set(nameMatches)].slice(-2);
+  if (players.length < 2) return null;
+  const values = [statMatch[1], statMatch[2]].map(value => value.replace(/\s+/g, ""));
+  const map = new Map();
+  players.forEach((player, index) => {
+    const payload = { breakPointsWon: values[index] || "" };
+    map.set(tennisPersonKey(player), payload);
+    map.set(surnameKey(player), payload);
+  });
+  return {
+    matchId,
+    players,
+    playerKeys: players.map(surnameKey).filter(Boolean).sort().join("|"),
+    stats: map
+  };
+}
+
+async function fetchUsOpenStatsPage(matchId) {
+  if (!matchId) return null;
+  if (usOpenStatsCache.has(matchId)) return usOpenStatsCache.get(matchId);
+  try {
+    const res = await http.get(`${US_OPEN_STATS_BASE}/${matchId}.html`, {
+      headers: { "Accept": "text/html,application/xhtml+xml,text/plain,*/*" },
+      timeout: 12000
+    });
+    const parsed = parseUsOpenStatsPage(res.data, matchId);
+    usOpenStatsCache.set(matchId, parsed);
+    return parsed;
+  } catch (err) {
+    if (process.env.DEBUG_SPORTS) console.warn(`US Open stats failed for ${matchId}:`, err.message);
+    usOpenStatsCache.set(matchId, null);
+    return null;
+  }
+}
+
+function usOpenPairKey(row = {}) {
+  return (row.teams || []).map(team => surnameKey(team.name || team.short)).filter(Boolean).sort().join("|");
+}
+
+async function cacheUsOpenBreakStats(rows = []) {
+  if (!ENABLE_US_OPEN_ENRICHMENT) return;
+  const pending = rows
+    .filter(row => row.competition === "US Open" && /singles/i.test(row.stage || ""))
+    .filter(row => !(row.teams || []).some(team => team.stats?.breakPointsWon));
+  const immediateIds = [...new Set(pending.flatMap(usOpenCandidateIdsForRow))]
+    .filter(id => !usOpenStatsCache.has(id))
+    .slice(0, US_OPEN_BREAK_IMMEDIATE_LIMIT);
+  await mapLimit(immediateIds, 5, fetchUsOpenStatsPage);
+  for (const row of pending) {
+    const pairKey = usOpenPairKey(row);
+    if (!pairKey) continue;
+    const candidates = usOpenCandidateIdsForRow(row);
+    for (const matchId of candidates) {
+      const parsed = usOpenStatsCache.get(matchId);
+      if (!parsed || parsed.playerKeys !== pairKey) continue;
+      row.usOpenMatchId = matchId;
+      mergeTennisStats(row, parsed.stats);
+      break;
+    }
+  }
 }
 
 async function mapLimit(items, limit, worker) {
@@ -969,6 +1095,7 @@ async function fetchTennis() {
     if (!statsMap) continue;
     mergeTennisStats(row, statsMap);
   }
+  await cacheUsOpenBreakStats(rows);
   return withTennisLineupLabels(dedupe(rows));
 }
 
