@@ -546,7 +546,14 @@ async function cacheUsOpenBreakStats(rows = []) {
   if (!ENABLE_US_OPEN_ENRICHMENT) return;
   const pending = rows
     .filter(row => row.competition === "US Open" && /singles/i.test(row.stage || ""))
-    .filter(row => !(row.teams || []).some(team => team.stats?.breakPointsWon));
+    .filter(row => !(row.teams || []).some(team => team.stats?.breakPointsWon))
+    .sort((a, b) => {
+      const live = (b.state === "Live") - (a.state === "Live");
+      if (live) return live;
+      const round = usOpenRoundNumber(b) - usOpenRoundNumber(a);
+      if (round) return round;
+      return (b.sortTime || 0) - (a.sortTime || 0);
+    });
   const immediateIds = [...new Set(pending.flatMap(usOpenCandidateIdsForRow))]
     .filter(id => !usOpenStatsCache.has(id))
     .slice(0, US_OPEN_BREAK_IMMEDIATE_LIMIT);
