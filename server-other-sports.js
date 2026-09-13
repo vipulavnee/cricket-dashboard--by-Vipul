@@ -83,8 +83,9 @@ const WIMBLEDON_AUTH = "77d2d900-b41b-4a6a-8700-b98f80bef920";
 const ENABLE_WIMBLEDON_ENRICHMENT = process.env.ENABLE_WIMBLEDON_ENRICHMENT !== "0";
 const US_OPEN_STATS_BASE = "https://www.usopen.org/en_US/scores/stats";
 const ENABLE_US_OPEN_ENRICHMENT = process.env.ENABLE_US_OPEN_ENRICHMENT !== "0";
-const US_OPEN_BREAK_IMMEDIATE_LIMIT = 20;
+const US_OPEN_BREAK_IMMEDIATE_LIMIT = 80;
 const usOpenStatsCache = new Map();
+let usOpenStatsBackfillPromise = null;
 
 // Grand slams we surface from the ESPN tennis scoreboards. Wimbledon additionally gets
 // point-by-point and break-stat enrichment from its own GraphQL feed. US Open break
@@ -459,6 +460,19 @@ function usOpenCandidateIdsForRow(row = {}) {
   return Array.from({ length: count }, (_, index) => `${prefix}${round}${String(index + 1).padStart(2, "0")}`);
 }
 
+function usOpenMainSinglesIds() {
+  const ids = [];
+  for (const prefix of [1, 2]) {
+    for (let round = 1; round <= 7; round++) {
+      const counts = { 1: 64, 2: 32, 3: 16, 4: 8, 5: 4, 6: 2, 7: 1 };
+      for (let index = 1; index <= counts[round]; index++) {
+        ids.push(`${prefix}${round}${String(index).padStart(2, "0")}`);
+      }
+    }
+  }
+  return ids;
+}
+
 function normalizeUsOpenHtml(html = "") {
   return String(html)
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
@@ -527,10 +541,16 @@ async function cacheUsOpenBreakStats(rows = []) {
     .filter(id => !usOpenStatsCache.has(id))
     .slice(0, US_OPEN_BREAK_IMMEDIATE_LIMIT);
   await mapLimit(immediateIds, 5, fetchUsOpenStatsPage);
+  startUsOpenBreakBackfill();
   for (const row of pending) {
     const pairKey = usOpenPairKey(row);
     if (!pairKey) continue;
-    const candidates = usOpenCandidateIdsForRow(row);
+    const candidates = [
+      ...usOpenCandidateIdsForRow(row),
+      ...[...usOpenStatsCache.entries()]
+        .filter(([, parsed]) => parsed?.playerKeys === pairKey)
+        .map(([matchId]) => matchId)
+    ];
     for (const matchId of candidates) {
       const parsed = usOpenStatsCache.get(matchId);
       if (!parsed || parsed.playerKeys !== pairKey) continue;
@@ -539,6 +559,17 @@ async function cacheUsOpenBreakStats(rows = []) {
       break;
     }
   }
+}
+
+function startUsOpenBreakBackfill() {
+  if (usOpenStatsBackfillPromise) return;
+  const missing = usOpenMainSinglesIds().filter(matchId => !usOpenStatsCache.has(matchId));
+  if (!missing.length) return;
+  usOpenStatsBackfillPromise = mapLimit(missing, 5, fetchUsOpenStatsPage)
+    .catch(err => {
+      if (process.env.DEBUG_SPORTS) console.warn("US Open break stat backfill failed:", err.message);
+    })
+    .finally(() => { usOpenStatsBackfillPromise = null; });
 }
 
 async function mapLimit(items, limit, worker) {
