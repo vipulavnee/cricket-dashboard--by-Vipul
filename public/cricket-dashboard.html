@@ -1145,6 +1145,17 @@ function momentum(match){
     return[batting?`${batting} batting`:"Match in progress","blue"];
   }
 
+  // Read the verdict off the win predictor rather than re-deriving it from run rates alone.
+  // Run rate ignores wickets, balls left and target proximity, so the two cards used to
+  // contradict each other - e.g. a chase ahead of the required rate but nine down showed
+  // "Batting Side" here while the predictor had the bowling side comfortably in front.
+  const split=predictorSplit(match);
+  if(split){
+    if(split.battingPct>=55)return["Batting Side","pink"];
+    if(split.battingPct<=45)return["Bowling Side","blue-team"];
+    return["In Balance","blue"];
+  }
+
   const c=parseFloat(currentRR(match)),r=parseFloat(requiredRR(match));
 
   if(innings(match)>=2 && Number.isFinite(c) && Number.isFinite(r)){
@@ -1160,6 +1171,17 @@ function momentum(match){
   }
 
   return["Neutral","blue"];
+}
+
+// Both predictor models format their verdict as "BAT x% · BOWL y%", batting side first.
+// Returns null for the non-numeric verdicts ("Building...", "Not enough data", Test draws).
+function predictorSplit(match){
+  const [text]=winPredictor(match);
+  if(/draw/i.test(text))return null;
+  const nums=String(text).match(/(\d+(?:\.\d+)?)%/g);
+  if(!nums||nums.length!==2)return null;
+  const battingPct=parseFloat(nums[0]);
+  return Number.isFinite(battingPct)?{battingPct}:null;
 }
 
 function scoreHTML(match){
@@ -1507,7 +1529,7 @@ function winPredictor(match){
   if(runsNeeded <= 20 && ballsLeft >= 12) chasePct += 10;
   if(runsNeeded <= 10 && wicketsLeft >= 3) chasePct += 15;
 
-  chasePct = Math.max(5, Math.min(99.5, Math.round(chasePct)));
+  chasePct = Math.max(1, Math.min(99.5, Math.round(chasePct)));
 
   return [
     `${chaseTeam} ${chasePct}% · ${defendTeam} ${100 - chasePct}%`,
