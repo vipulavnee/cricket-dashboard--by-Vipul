@@ -53,11 +53,6 @@ const ENG_NZ_CATEGORY = "Test Championship";
 // Source: https://www.cricinfo.com/team/india-6/match-schedule-fixtures-and-results (synced 2026-08-29).
 // Cricinfo renders start times in Asia/Kolkata; startISO below is the UTC equivalent.
 const INDIA_FUTURE_FIXTURES = [
-  // Afghanistan tour of India, Sep 2026
-  { id: "espn-ind-afg-2026-t20-1", matchNo: "1st T20I", teams: ["India", "Afghanistan"], startISO: "2026-09-13T14:00:00.000Z", venue: "Delhi", url: "https://www.espncricinfo.com/series/afghanistan-in-india-2026-1549583/india-vs-afghanistan-1st-t20i-1549586/live-cricket-score" },
-  { id: "espn-ind-afg-2026-t20-2", matchNo: "2nd T20I", teams: ["India", "Afghanistan"], startISO: "2026-09-15T14:00:00.000Z", venue: "Delhi", url: "https://www.espncricinfo.com/series/afghanistan-in-india-2026-1549583/india-vs-afghanistan-2nd-t20i-1549587/live-cricket-score" },
-  { id: "espn-ind-afg-2026-t20-3", matchNo: "3rd T20I", teams: ["India", "Afghanistan"], startISO: "2026-09-17T14:00:00.000Z", venue: "Delhi", url: "https://www.espncricinfo.com/series/afghanistan-in-india-2026-1549583/india-vs-afghanistan-3rd-t20i-1549588/live-cricket-score" },
-
   // West Indies tour of India, 2026-27
   { id: "espn-ind-wi-2026-odi-1", matchNo: "1st ODI", teams: ["India", "West Indies"], startISO: "2026-09-27T08:30:00.000Z", venue: "Thiruvananthapuram", url: "https://www.espncricinfo.com/series/west-indies-in-india-2026-27-1529215/india-vs-west-indies-1st-odi-1529227/live-cricket-score" },
   { id: "espn-ind-wi-2026-odi-2", matchNo: "2nd ODI", teams: ["India", "West Indies"], startISO: "2026-09-30T08:30:00.000Z", venue: "Guwahati", url: "https://www.espncricinfo.com/series/west-indies-in-india-2026-27-1529215/india-vs-west-indies-2nd-odi-1529228/live-cricket-score" },
@@ -310,6 +305,54 @@ const INDIA_RESULT_FIXTURES = [
     scores: [
       { team: "IND", score: "503/9d", overs: "" },
       { team: "SL", score: "290 & 429/9d", overs: "" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "ind-afg-2026-t20-1-result",
+    matchNo: "1st T20I",
+    teams: ["India", "Afghanistan"],
+    startISO: "2026-09-13T14:00:00.000Z",
+    venue: "Delhi",
+    url: "https://www.espncricinfo.com/series/afghanistan-in-india-2026-1549583/india-vs-afghanistan-1st-t20i-1549586/full-scorecard",
+    state: "Finished",
+    status: "India won by 7 wickets (with 38 balls remaining)",
+    score: "AFG 156/8 (20 ov) | IND 157/3 (13.4 ov)",
+    scores: [
+      { team: "AFG", score: "156/8", overs: "20" },
+      { team: "IND", score: "157/3", overs: "13.4" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "ind-afg-2026-t20-2-result",
+    matchNo: "2nd T20I",
+    teams: ["India", "Afghanistan"],
+    startISO: "2026-09-15T14:00:00.000Z",
+    venue: "Delhi",
+    url: "https://www.espncricinfo.com/series/afghanistan-in-india-2026-1549583/india-vs-afghanistan-2nd-t20i-1549587/full-scorecard",
+    state: "Finished",
+    status: "India won by 7 wickets (with 31 balls remaining)",
+    score: "AFG 159/8 (20 ov) | IND 163/3 (14.5 ov)",
+    scores: [
+      { team: "AFG", score: "159/8", overs: "20" },
+      { team: "IND", score: "163/3", overs: "14.5" }
+    ],
+    playerOfMatch: ""
+  },
+  {
+    id: "ind-afg-2026-t20-3-result",
+    matchNo: "3rd T20I",
+    teams: ["India", "Afghanistan"],
+    startISO: "2026-09-17T14:00:00.000Z",
+    venue: "Delhi",
+    url: "https://www.espncricinfo.com/series/afghanistan-in-india-2026-1549583/india-vs-afghanistan-3rd-t20i-1549588/full-scorecard",
+    state: "Finished",
+    status: "India won by 127 runs",
+    score: "IND 221/7 (20 ov) | AFG 94 (14.1 ov)",
+    scores: [
+      { team: "IND", score: "221/7", overs: "20" },
+      { team: "AFG", score: "94", overs: "14.1" }
     ],
     playerOfMatch: ""
   }
@@ -1196,6 +1239,11 @@ function chooseBestScores(scores) {
     const currentRuns = parseInt(String(score.score).match(/\d+/)?.[0] || "0", 10);
     const existingRuns = parseInt(String(existing.score).match(/\d+/)?.[0] || "0", 10);
 
+    // Same scoreline, but this candidate has no overs: keep the richer one. Every candidate
+    // inherits the page CRR, so currentHasRR alone would let a bare "WI 93/0" displace
+    // "WI 93/0 (12.4)" and drop the overs from the live score line.
+    if (currentRuns === existingRuns && existingHasOvers && !currentHasOvers) continue;
+
     if (currentRuns >= existingRuns && (currentHasOvers || currentHasRR)) {
       byTeam.set(key, score);
     }
@@ -1295,11 +1343,16 @@ function extractFullScorecardScores(text, teams) {
     const escapedFull = fullTeam.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const escapedShort = shortTeam.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+    // These run case-insensitively, so the team token needs a guard on both sides: a bare
+    // "IND" otherwise matches inside "West Indies" and the loose [^\d] gap then picks up
+    // that side's score. The lookahead rejects a following letter but still allows a digit,
+    // because Cricbuzz runs the name straight into the runs ("West Indies90-0 (11.1 Ov)").
+    const boundary = "(?![A-Za-z])";
     const patterns = [
-      new RegExp(`${escapedFull}\\s+(?:Innings)?\\s*(\\d{1,3})\\s*[-/]\\s*(\\d{1,2})\\s*\\((\\d{1,3}(?:\\.\\d)?)(?:\\/20)?\\s*Ov\\)`, "i"),
-      new RegExp(`${escapedShort}\\s+(\\d{1,3})\\s*[-/]\\s*(\\d{1,2})\\s*\\((\\d{1,3}(?:\\.\\d)?)(?:\\/20)?\\s*Ov\\)`, "i"),
-      new RegExp(`${escapedFull}[^\\d]{0,60}(\\d{1,3})\\s*[-/]\\s*(\\d{1,2})[^\\d]{0,20}(\\d{1,3}(?:\\.\\d)?)\\s*Ov`, "i"),
-      new RegExp(`${escapedShort}[^\\d]{0,60}(\\d{1,3})\\s*[-/]\\s*(\\d{1,2})[^\\d]{0,20}(\\d{1,3}(?:\\.\\d)?)\\s*Ov`, "i")
+      new RegExp(`\\b${escapedFull}${boundary}\\s*(?:Innings)?\\s*(\\d{1,3})\\s*[-/]\\s*(\\d{1,2})\\s*\\((\\d{1,3}(?:\\.\\d)?)(?:\\/20)?\\s*Ov\\)`, "i"),
+      new RegExp(`\\b${escapedShort}${boundary}\\s*(\\d{1,3})\\s*[-/]\\s*(\\d{1,2})\\s*\\((\\d{1,3}(?:\\.\\d)?)(?:\\/20)?\\s*Ov\\)`, "i"),
+      new RegExp(`\\b${escapedFull}${boundary}[^\\d]{0,60}(\\d{1,3})\\s*[-/]\\s*(\\d{1,2})[^\\d]{0,20}(\\d{1,3}(?:\\.\\d)?)\\s*Ov`, "i"),
+      new RegExp(`\\b${escapedShort}${boundary}[^\\d]{0,60}(\\d{1,3})\\s*[-/]\\s*(\\d{1,2})[^\\d]{0,20}(\\d{1,3}(?:\\.\\d)?)\\s*Ov`, "i")
     ];
 
     for (const pattern of patterns) {
@@ -1488,7 +1541,9 @@ async function fetchMatchDetail(url, teams, stateHint) {
     ]);
     if (structuredTest) scores = structuredTestScores(embedded);
 
-    if (stateHint === "Finished" || combinedText.toLowerCase().includes("won")) {
+    // "won" alone also fires on "India won the toss", sending live matches down the
+    // finished-scorecard path; match a result phrase instead.
+    if (stateHint === "Finished" || /\bwon by\b|\bmatch drawn\b|\bmatch tied\b|\bwon the match\b/i.test(combinedText)) {
       const finishedScores = await fetchFinishedScorecardScores(url, teams);
 
       if (finishedScores.length) {
