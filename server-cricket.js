@@ -543,7 +543,9 @@ function hasSameScheduledMatch(matches, fixture, category) {
     if (match.category !== category) return false;
     const sameTeams = [...(match.teams || [])].sort().join("|") === [...fixture.teams].sort().join("|");
     const sameDate = match.startISO && fixture.startISO && match.startISO.slice(0, 10) === fixture.startISO.slice(0, 10);
-    return sameTeams && sameDate;
+    const matchFormat = fixtureFormatKey(match), fixtureFormat = fixtureFormatKey(fixture);
+    const sameFormat = matchFormat === "match" || fixtureFormat === "match" || matchFormat === fixtureFormat;
+    return sameTeams && sameDate && sameFormat;
   });
 }
 
@@ -971,7 +973,26 @@ function extractEmbeddedMatchData(html, url) {
   const infoMarker = source.lastIndexOf('"matchInfo":', idIndex);
   const matchInfo = extractJsonObjectAfter(source, '"matchInfo":', infoMarker);
   const matchScore = extractJsonObjectAfter(source, '"matchScore":', idIndex);
-  return matchInfo && matchScore ? { matchInfo, matchScore } : null;
+  return matchInfo && matchScore && String(matchInfo.matchId) === id ? { matchInfo, matchScore } : null;
+}
+
+function extractOwnMatchPanel($) {
+  const panel = $("#miniscore-branding-container, #sticky-mcomplete, .cb-min-inf").first();
+  if (!panel.length) return { text: "", status: "" };
+  const readText = node => node.type === "text" ? node.data
+    : /^(script|style)$/.test(node.name || "") ? ""
+    : (node.children || []).map(readText).join(" ");
+  const text = clean(readText(panel[0])).replace(/\(\s*(\d+(?:\.\d+)?)\s*\)/g, "($1)");
+  const status = clean(panel.find(".text-cbTxtLive, .text-cbLive, .text-cbTextLink, .cb-text-live, .cb-text-complete, .cb-text-preview").first().text());
+  return { text, status };
+}
+
+function structuredLimitedOversScores(embedded) {
+  return structuredTestScores(embedded).map(row => {
+    const latest = row.innings[row.innings.length - 1];
+    const overs = normalizeOversText(latest.overs);
+    return { ...row, overs, rr: calculateRR(String(latest.runs), overs) };
+  });
 }
 
 function structuredTestScores(embedded) {
@@ -1263,7 +1284,7 @@ function extractScoresFromText(text, teams) {
   const crr = extractCrr(source);
 
   const knownShorts = teams.map(team => TEAM_SHORT[team]).filter(Boolean);
-  const shorts = Array.from(new Set([...knownShorts, ...ALL_SHORTS]));
+  const shorts = Array.from(new Set(knownShorts));
 
   for (const short of shorts) {
     const patterns = [
@@ -1390,9 +1411,16 @@ async function fetchFinishedScorecardScores(url, teams) {
     try {
       const html = await fetchHtml(tryUrl);
       const $ = cheerio.load(html);
-
+      const ownPanel = extractOwnMatchPanel($);
+      const embedded = extractEmbeddedMatchData(html, url);
+      if (embedded) return embedded.matchInfo.matchFormat === "TEST" ? structuredTestScores(embedded) : structuredLimitedOversScores(embedded);
+      if (ownPanel.text) {
+        const scores = extractScoresFromText(ownPanel.text, teams);
+        if (scores.length) return scores;
+      }
+      $("script, style, nav, header, footer").remove();
       const structuredText = extractStructuredText($);
-      const bodyText = clean($("body").text());
+      const bodyText = clean($("main").length ? $("main").text() : $("body").text());
       const combined = clean(`${structuredText} ${bodyText}`);
 
       let scores = extractFullScorecardScores(combined, teams);
@@ -1463,7 +1491,7 @@ function parseLiveDetails(text, scores, teams = []) {
   const crrMatch = source.match(/\bCRR[:\s]*([\d.]+)/i);
   if (crrMatch) details.rr = crrMatch[1];
 
-  const reqMatch = source.match(/\bRequired RR[:\s]*([\d.]+)/i);
+  const reqMatch = source.match(/\b(?:Required RR|REQ)[:\s]*([\d.]+)/i);
   if (reqMatch) details.requiredRR = reqMatch[1];
 
   const lastFiveMatch = source.match(/Last 5 overs?[:\s]+(\d+\s+runs?,?\s*\d*\s*wkts?)/i);
@@ -1509,10 +1537,11 @@ async function fetchMatchDetail(url, teams, stateHint) {
     const $ = cheerio.load(html);
     const schemaStart = String(html).match(/"startDate"\s*:\s*"([^"]+)"/i)?.[1] || "";
 
-    const structuredText = extractStructuredText($);
-    const bodyText = clean($("body").text());
+    const ownPanel = extractOwnMatchPanel($);
+    const structuredText = ownPanel.status || ownPanel.text;
+    const bodyText = ownPanel.text;
     const metaDescription = clean($("meta[name='description']").attr("content"));
-    const combinedText = clean(`${metaDescription} ${structuredText} ${bodyText}`);
+    const combinedText = bodyText || metaDescription;
     let embedded = extractEmbeddedMatchData(html, url);
     if (!embedded && /(?:^|[-/])test(?:[-/]|$)/i.test(url)) {
       try {
@@ -1539,11 +1568,12 @@ async function fetchMatchDetail(url, teams, stateHint) {
       ...compositeScores,
       ...regularScores
     ]);
-    if (structuredTest) scores = structuredTestScores(embedded);
+    if (embedded) scores = structuredTest ? structuredTestScores(embedded) : structuredLimitedOversScores(embedded);
 
     // "won" alone also fires on "India won the toss", sending live matches down the
     // finished-scorecard path; match a result phrase instead.
-    if (stateHint === "Finished" || /\bwon by\b|\bmatch drawn\b|\bmatch tied\b|\bwon the match\b/i.test(combinedText)) {
+    const needsScorecard = scores.length < teams.length || scores.some(score => !score.overs);
+    if (!embedded && needsScorecard && (stateHint === "Finished" || /\bwon by\b|\bmatch drawn\b|\bmatch tied\b|\bwon the match\b/i.test(ownPanel.status || ""))) {
       const finishedScores = await fetchFinishedScorecardScores(url, teams);
 
       if (finishedScores.length) {
@@ -1552,6 +1582,9 @@ async function fetchMatchDetail(url, teams, stateHint) {
     }
 
     const liveDetails = parseLiveDetails(combinedText, scores, teams);
+    liveDetails.currentBatters = extractCurrentBatters(metaDescription);
+    const currentScore = scores.find(score => score.isCurrent);
+    if (currentScore) liveDetails.battingTeam = currentScore.team;
     if (structuredTest) {
       const current = scores.find(score => score.isCurrent);
       const wickets = parseInt(current?.score?.split("&").pop().match(/\/(\d+)/)?.[1] || "0", 10);
@@ -1562,7 +1595,8 @@ async function fetchMatchDetail(url, teams, stateHint) {
       liveDetails.daySession = clean(embedded.matchInfo.status).split(" - ")[0] || "";
       liveDetails.venue = [embedded.matchInfo.venueInfo?.ground, embedded.matchInfo.venueInfo?.city].filter(Boolean).join(", ");
     }
-    const result = extractOwnResult(combinedText, teams);
+    const structuredStatus = clean(embedded?.matchInfo?.status) || ownPanel.status;
+    const result = extractOwnResult(structuredStatus, teams);
     const playerOfMatch = extractPlayersOfMatch(html);
 
     return {
@@ -1572,7 +1606,8 @@ async function fetchMatchDetail(url, teams, stateHint) {
       liveDetails,
       result,
       playerOfMatch,
-      structuredStatus: structuredTest ? clean(embedded.matchInfo.status) : "",
+      structuredStatus,
+      matchFormat: embedded?.matchInfo?.matchFormat || "",
       endISO: structuredTest && Number.isFinite(Number(embedded.matchInfo.endDate))
         ? new Date(Number(embedded.matchInfo.endDate)).toISOString()
         : "",
@@ -1759,6 +1794,7 @@ async function scrapeWomensT20WorldCup() {
     return {
       id: item.id,
       name: getMatchName(item.teams, item.slug),
+      matchFormat: detail.matchFormat || (fixtureFormatKey(item) === "odi" ? "ODI" : fixtureFormatKey(item) === "test" ? "TEST" : /t20/i.test(item.url) ? "T20" : ""),
       teams: item.teams,
       category: item.category,
       state,
@@ -1860,10 +1896,12 @@ function matchOrdinalFromText(match) {
 }
 
 function fixtureFormatKey(match) {
-  const text = `${match?.matchNo || ""} ${match?.url || ""} ${match?.name || ""}`.toLowerCase();
-  if (/\bodi\b/.test(text)) return "odi";
-  if (/\bt20i\b/.test(text)) return "t20i";
-  if (/\btest\b/.test(text)) return "test";
+  for (const value of [match?.matchFormat, match?.format, match?.matchNo, match?.url, match?.name]) {
+    const text = String(value || "").toLowerCase();
+    if (/\bodi\b/.test(text)) return "odi";
+    if (/\bt20i?\b/.test(text)) return "t20i";
+    if (/\btest\b/.test(text)) return "test";
+  }
   return "match";
 }
 
@@ -1888,7 +1926,7 @@ function dedupeDashboardMatches(list) {
     const forceDateKey = /local (?:schedule pending result|result copy|verified result)/i.test(String(match?.source || ""))
       || match?.category === INDIA_CATEGORY
       || match?.category === ENG_NZ_CATEGORY;
-    const stage = !forceDateKey && ordinal ? `${ordinal}-${fixtureFormatKey(match)}` : date || String(match?.id || match?.name || "");
+    const stage = !forceDateKey && ordinal ? `${ordinal}-${fixtureFormatKey(match)}` : `${date || String(match?.id || match?.name || "")}-${fixtureFormatKey(match)}`;
     const key = `${match?.category || ""}|${teams}|${stage}`;
     const previous = byKey.get(key);
     if (!previous || scoreMatch(match) > scoreMatch(previous)) byKey.set(key, match);

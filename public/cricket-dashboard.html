@@ -456,10 +456,12 @@ function withLocalSchedule(matches){
 }
 
 function fixtureFormatKey(match){
-  const text=`${match?.matchNo||""} ${match?.url||""} ${match?.name||""}`.toLowerCase();
-  if(/\bodi\b/.test(text))return"odi";
-  if(/\bt20i\b/.test(text))return"t20i";
-  if(/\btest\b/.test(text))return"test";
+  for(const value of [match?.matchFormat,match?.format,match?.matchNo,match?.url,match?.name]){
+    const text=String(value||"").toLowerCase();
+    if(/\bodi\b/.test(text))return"odi";
+    if(/\bt20i?\b/.test(text))return"t20i";
+    if(/\btest\b/.test(text))return"test";
+  }
   return"match";
 }
 
@@ -484,7 +486,7 @@ function dedupeDashboardMatches(list){
     const forceDateKey=/local (?:schedule pending result|result copy|verified result)/i.test(String(match?.source||""))||match?.category==="Indian Men"||match?.category==="Test Championship";
     const stage=match?.category===TOURNAMENT_CATEGORY&&ordinal
       ? `${ordinal}-${fixtureFormatKey(match)}`
-      : !forceDateKey&&ordinal?`${ordinal}-${fixtureFormatKey(match)}`:date||String(match?.id||match?.name||"");
+      : !forceDateKey&&ordinal?`${ordinal}-${fixtureFormatKey(match)}`:`${date||String(match?.id||match?.name||"")}-${fixtureFormatKey(match)}`;
     const key=match?.category===TOURNAMENT_CATEGORY&&ordinal
       ? `${match?.category||""}|${stage}`
       : `${match?.category||""}|${teams}|${stage}`;
@@ -498,8 +500,8 @@ function dedupeDashboardMatches(list){
 /* Retained only as an inert historical reference; live tournament data comes from the server. */
 const $ = id => document.getElementById(id);
 const stateOf = m => String(m?.state || "").trim();
-const isODI = m => /\bodi\b/i.test(`${m?.matchFormat||""} ${m?.format||""} ${m?.matchNo||""} ${m?.name||""} ${m?.url||""}`);
-const isTest = m => /\btest\b/i.test(`${m?.matchNo||""} ${m?.name||""} ${m?.url||""}`) || m?.category==="Test Championship";
+const isODI = m => fixtureFormatKey(m)==="odi";
+const isTest = m => fixtureFormatKey(m)==="test" || m?.category==="Test Championship";
 const inningsOvers = m => isODI(m) ? 50 : 20;
 const inningsBalls = m => inningsOvers(m) * 6;
 
@@ -924,6 +926,8 @@ function displayOvers(match,row){return row?.overs || ""}
 function currentScore(match){
   const s=Array.isArray(match?.scores)?match.scores:[];
   if(!s.length)return null;
+  const current=s.find(row=>row?.isCurrent)||s.find(row=>match?.liveDetails?.battingTeam&&teamShort(row?.team)===teamShort(match.liveDetails.battingTeam));
+  if(current)return current;
   if(isTest(match))return s.find(row=>row?.isCurrent)
     ||s.find(row=>{
       const last=String(row?.score||"").split("&").pop();
@@ -931,6 +935,11 @@ function currentScore(match){
       return String(row?.score||"").includes("&")&&wickets<10;
     })||s.find(row=>row?.overs)||s[0];
   if(s.length>=2 && stateOf(match)==="Live"){
+    const chasingTeam=(match?.teams||[]).find(team=>String(match?.status||"").toLowerCase().startsWith(`${String(team).toLowerCase()} need`));
+    const chasing=s.find(row=>chasingTeam&&teamShort(row?.team)===teamShort(chasingTeam));
+    if(chasing)return chasing;
+    const completed=s.filter(row=>/\/10\b/.test(String(row?.score||""))||/^\d+$/.test(String(row?.score||""))||oversDec(row?.overs)>=inningsOvers(match));
+    if(completed.length===1)return s.find(row=>row!==completed[0]);
     const withOvers=s.filter(row=>Number.isFinite(oversDec(row?.overs)));
     if(withOvers.length>=2)return [...withOvers].sort((a,b)=>oversDec(a.overs)-oversDec(b.overs))[0];
   }
@@ -1440,30 +1449,8 @@ function winPredictor(match){
   const scoreA = scores[0];
   const scoreB = scores[1];
 
-  const oversA = oversDec(scoreA?.overs);
-  const oversB = oversDec(scoreB?.overs);
-
-  let chase = scoreA;
-  let defend = scoreB;
-
-  // Detect chasing innings safely.
-  // In live chase, current/chasing innings usually has overs below 20.
-  // Completed first innings usually has 20 overs.
-  if(isODI(match)){
-    const runsA=runs(scoreA?.score),runsB=runs(scoreB?.score);
-    if(Number.isFinite(runsA)&&Number.isFinite(runsB)){
-      defend=runsA>=runsB?scoreA:scoreB;
-      chase=defend===scoreA?scoreB:scoreA;
-    }
-  } else if(Number.isFinite(oversA) && Number.isFinite(oversB)){
-    if(oversA >= 20 && oversB < 20){
-      defend = scoreA;
-      chase = scoreB;
-    } else if(oversB >= 20 && oversA < 20){
-      defend = scoreB;
-      chase = scoreA;
-    }
-  }
+  const chase = currentScore(match) || scoreB;
+  const defend = scores.find(row=>row!==chase) || scoreA;
 
   const chaseTeam = displayTeamShort(chase?.team || teams[1]);
   const defendTeam = displayTeamShort(defend?.team || opponentOf(teams, chaseTeam));
