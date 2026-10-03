@@ -440,7 +440,7 @@ function withLocalSchedule(matches){
     ...match,
     category:match?.category==="India Men"?"Indian Men":match?.category==="England vs New Zealand"?"Test Championship":match?.category
   }));
-  for(const fixture of LOCAL_SCHEDULE_COPY.map(scheduleFallback)){
+  for(const fixture of LOCAL_SCHEDULE_COPY.filter(fixture=>fixture.category!=="Test Championship").map(scheduleFallback)){
     const duplicate=normalized.some(match=>{
       const sameCategory=match.category===fixture.category;
       const sameTeams=[...(match.teams||[])].sort().join("|")===[...fixture.teams].sort().join("|");
@@ -450,7 +450,7 @@ function withLocalSchedule(matches){
     if(!duplicate)normalized.push(fixture);
   }
   for(const result of LOCAL_RESULT_COPY){
-    normalized.push(result);
+    if(result.category!=="Test Championship")normalized.push(result);
   }
   return dedupeDashboardMatches(normalized);
 }
@@ -821,6 +821,12 @@ function getPrimaryMatch(){
 
 function getMatchNumber(m){
   if(m?.matchNo) return m.matchNo;
+  if(/asian-games/i.test(String(m?.url||""))){
+    const url=String(m.url);
+    const numbered=url.match(/(\d+(?:st|nd|rd|th))-(semi|quarter)-final/i);
+    const stage=numbered?`${numbered[1]} ${numbered[2].toLowerCase()==="semi"?"Semi-final":"Quarter-final"}`:/gold-medal|\/[^/]*-final-/i.test(url)?"Final":"Match";
+    return `Asian Games · T20I · ${stage}`;
+  }
   if(m?.category===TOURNAMENT_CATEGORY){
     const teams=[...(m?.teams||[])].map(team=>String(team||"").toLowerCase()).sort().join("|");
     if(teams==="australia women|england women")return"33rd Match - Final";

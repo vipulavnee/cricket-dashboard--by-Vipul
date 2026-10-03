@@ -50,7 +50,7 @@ const WOMENS_CATEGORY = "Women's T20 World Cup";
 const INDIA_CATEGORY = "Indian Men";
 const ENG_NZ_CATEGORY = "Test Championship";
 
-// Source: https://www.cricinfo.com/team/india-6/match-schedule-fixtures-and-results (synced 2026-08-29).
+// Source: https://www.cricinfo.com/team/india-6/match-schedule-fixtures-and-results (verified 2026-10-03).
 // Cricinfo renders start times in Asia/Kolkata; startISO below is the UTC equivalent.
 const INDIA_FUTURE_FIXTURES = [
   // West Indies tour of India, 2026-27
@@ -358,119 +358,40 @@ const INDIA_RESULT_FIXTURES = [
   }
 ];
 
-// Completed Tests live in TEST_RESULT_FIXTURES; the Lord's Test (27-31 Aug) is in progress and
-// comes from the live Cricbuzz scrape, so only genuinely upcoming Tests belong here.
-const TEST_CHAMPIONSHIP_FIXTURES = [
-  {
-    id: "wtc-eng-pak-2026-3",
-    matchNo: "3rd Test",
-    teams: ["England", "Pakistan"],
-    startISO: "2026-09-09T10:00:00.000Z",
-    endISO: "2026-09-13T17:00:00.000Z",
-    venue: "Edgbaston, Birmingham",
-    url: "https://www.espncricinfo.com/series/pakistan-tour-in-england-2026-1496563"
-  }
-];
+const WTC_SNAPSHOT = require(path.join(__dirname, "data/world-test-championship-2025-2027.json"));
+const INDIA_SCHEDULE_UPDATE = require(path.join(__dirname, "data/india-men-schedule-updates.json"));
+INDIA_FUTURE_FIXTURES.push(...INDIA_SCHEDULE_UPDATE.fixtures);
+INDIA_RESULT_FIXTURES.push(...INDIA_SCHEDULE_UPDATE.results.map(fixture => ({
+  ...fixture, state: "Finished", verifiedAt: INDIA_SCHEDULE_UPDATE.verifiedAt,
+  scheduleSource: INDIA_SCHEDULE_UPDATE.source,
+  timeTBA: !fixture.startISO.includes("T"), endISO: fixture.startISO.slice(0, 10), endTimeKnown: false,
+  score: fixture.scores.map(row => `${row.team} ${row.score}${row.overs ? ` (${row.overs} ov)` : ""}`).join(" | ") || fixture.status
+})));
 
-const TEST_RESULT_FIXTURES = [
-  {
-    id: "wtc-eng-nz-2026-3-result",
-    matchNo: "3rd Test",
-    teams: ["England", "New Zealand"],
-    startISO: "2026-06-25T10:00:00.000Z",
-    venue: "Trent Bridge, Nottingham",
-    state: "Finished",
-    status: "New Zealand won by 160 runs",
-    score: "NZ 438 & 288/9d | ENG 354 & 212",
-    scores: [
-      { team: "NZ", score: "438 & 288/9d", overs: "114.5 & 94" },
-      { team: "ENG", score: "354 & 212", overs: "88.2 & 51.2" }
-    ],
-    playerOfMatch: "Daryl Mitchell",
-    endISO: "2026-06-29T17:00:00.000Z"
-  },
-  {
-    id: "wtc-wi-sl-2026-1-result",
-    matchNo: "1st Test",
-    teams: ["West Indies", "Sri Lanka"],
-    startISO: "2026-06-25T14:00:00.000Z",
-    endISO: "2026-06-28T21:00:00.000Z",
-    venue: "Sir Vivian Richards Stadium, North Sound, Antigua",
-    state: "Finished",
-    status: "West Indies won by an innings and 217 runs",
-    score: "SL 308 & 101 | WI 626/9d",
-    scores: [
-      { team: "SL", score: "308 & 101", overs: "" },
-      { team: "WI", score: "626/9d", overs: "" }
-    ],
-    playerOfMatch: ""
-  },
-  {
-    id: "wtc-wi-sl-2026-2-result",
-    matchNo: "2nd Test",
-    teams: ["West Indies", "Sri Lanka"],
-    startISO: "2026-07-03T14:00:00.000Z",
-    endISO: "2026-07-07T21:00:00.000Z",
-    venue: "Sir Vivian Richards Stadium, North Sound, Antigua",
-    state: "Finished",
-    status: "Match drawn",
-    score: "SL 549/9d & 251/9d | WI 499 & 109/0",
-    scores: [
-      { team: "SL", score: "549/9d & 251/9d", overs: "" },
-      { team: "WI", score: "499 & 109/0", overs: "" }
-    ],
-    playerOfMatch: ""
-  },
-  {
-    id: "wtc-aus-ban-2026-1-result",
-    matchNo: "1st Test",
-    teams: ["Australia", "Bangladesh"],
-    startISO: "2026-08-13T00:00:00.000Z",
-    endISO: "2026-08-16T23:59:00.000Z",
-    venue: "Marrara Oval, Darwin",
-    state: "Finished",
-    status: "Bangladesh won by 9 wickets",
-    score: "AUS 198 & 284 | BAN 426 & 57/1",
-    scores: [
-      { team: "AUS", score: "198 & 284", overs: "" },
-      { team: "BAN", score: "426 & 57/1", overs: "" }
-    ],
-    playerOfMatch: ""
-  },
-  {
-    id: "wtc-eng-pak-2026-1-result",
-    matchNo: "1st Test",
-    teams: ["England", "Pakistan"],
-    startISO: "2026-08-19T00:00:00.000Z",
-    endISO: "2026-08-21T23:59:00.000Z",
-    venue: "Headingley, Leeds",
-    url: "https://www.espncricinfo.com/series/pakistan-tour-in-england-2026-1496563",
-    state: "Finished",
-    status: "England won by an innings and 103 runs",
-    score: "PAK 171 & 135 | ENG 409",
-    scores: [
-      { team: "PAK", score: "171 & 135", overs: "" },
-      { team: "ENG", score: "409", overs: "" }
-    ],
-    playerOfMatch: ""
-  },
-  {
-    id: "wtc-aus-ban-2026-2-result",
-    matchNo: "2nd Test",
-    teams: ["Australia", "Bangladesh"],
-    startISO: "2026-08-22T00:00:00.000Z",
-    endISO: "2026-08-23T23:59:00.000Z",
-    venue: "Great Barrier Reef Arena, Mackay",
-    state: "Finished",
-    status: "Australia won by an innings and 51 runs",
-    score: "BAN 64 & 95 | AUS 210",
-    scores: [
-      { team: "BAN", score: "64 & 95", overs: "" },
-      { team: "AUS", score: "210", overs: "" }
-    ],
-    playerOfMatch: ""
-  }
-];
+function wtcSnapshotFixture(row, finished) {
+  const [matchNo, team1, team2, startISO, endDate, venue, ...detail] = row;
+  const matchPath = detail[finished ? 3 : 0];
+  const short = team => Object.entries(MENS_TEAMS).find(([, name]) => name === team)?.[0].toUpperCase() || team;
+  const scores = finished ? [
+    { team: short(team1), score: detail[0], overs: "" },
+    { team: short(team2), score: detail[1], overs: "" }
+  ] : [];
+  return {
+    id: `wtc-${matchPath.match(/-(\d+)\/(?:full-scorecard|live-cricket-score)$/)?.[1]}`,
+    matchNo, matchFormat: "TEST", teams: [team1, team2], startISO,
+    endISO: endDate, endTimeKnown: false, venue,
+    timeTBA: finished, url: `https://www.cricinfo.com/series/${matchPath}`,
+    scheduleSource: WTC_SNAPSHOT.source, verifiedAt: WTC_SNAPSHOT.verifiedAt,
+    ...(finished ? {
+      state: "Finished", status: detail[2], scores,
+      score: scores.map(score => `${score.team} ${score.score}`).join(" | "),
+      playerOfMatch: ""
+    } : {})
+  };
+}
+
+const TEST_CHAMPIONSHIP_FIXTURES = WTC_SNAPSHOT.fixtures.map(row => wtcSnapshotFixture(row, false));
+const TEST_RESULT_FIXTURES = WTC_SNAPSHOT.results.map(row => wtcSnapshotFixture(row, true));
 
 // The 2026 tournament finished on 5 Jul 2026 (Australia beat England in the final),
 // so there are no upcoming fixtures left; every match now lives in WOMENS_RESULT_FIXTURES.
@@ -1794,7 +1715,7 @@ async function scrapeWomensT20WorldCup() {
     return {
       id: item.id,
       name: getMatchName(item.teams, item.slug),
-      matchFormat: detail.matchFormat || (fixtureFormatKey(item) === "odi" ? "ODI" : fixtureFormatKey(item) === "test" ? "TEST" : /t20/i.test(item.url) ? "T20" : ""),
+      matchFormat: detail.matchFormat || (fixtureFormatKey(item) === "odi" ? "ODI" : fixtureFormatKey(item) === "test" ? "TEST" : /t20|asian-games/i.test(item.url) ? "T20I" : ""),
       teams: item.teams,
       category: item.category,
       state,
@@ -1821,33 +1742,20 @@ async function scrapeWomensT20WorldCup() {
       ...fixture,
       name: `${fixture.teams[0]} vs ${fixture.teams[1]}`,
       category: INDIA_CATEGORY,
-      source: "Local result copy",
+      source: fixture.verifiedAt ? "Local verified result" : "Local result copy",
       liveDetails: { venue: fixture.venue || "" },
       liveScorecard: null,
       rawText: fixture.status
     }));
 
   const scheduledTestMatches = TEST_CHAMPIONSHIP_FIXTURES
-    .filter(fixture => Date.parse(fixture.startISO) > Date.now())
     .filter(fixture => !matches.some(match => {
       if (match.category !== ENG_NZ_CATEGORY) return false;
       const sameTeams = [...(match.teams || [])].sort().join("|") === [...fixture.teams].sort().join("|");
       const sameDate = match.startISO && match.startISO.slice(0, 10) === fixture.startISO.slice(0, 10);
       return sameTeams && sameDate;
     }))
-    .map(fixture => ({
-      ...fixture,
-      name: `${fixture.teams[0]} vs ${fixture.teams[1]}`,
-      category: ENG_NZ_CATEGORY,
-      state: "Upcoming",
-      status: scheduledFixtureStatus(fixture, "Upcoming"),
-      source: "Local schedule copy",
-      score: "Match not started",
-      scores: [],
-      liveDetails: { venue: fixture.venue },
-      liveScorecard: null,
-      rawText: ""
-    }));
+    .map(fixture => scheduleFixtureToMatch(fixture, ENG_NZ_CATEGORY));
 
   const resultTestMatches = TEST_RESULT_FIXTURES
     .map(fixture => ({
@@ -1881,7 +1789,11 @@ async function scrapeWomensT20WorldCup() {
       rawText: fixture.status
     }));
 
-  return dedupeDashboardMatches([...matches, ...scheduledIndiaMatches, ...resultIndiaMatches, ...scheduledTestMatches, ...resultTestMatches, ...scheduledWomensMatches, ...resultWomensMatches]).sort((a, b) => {
+  const indiaTestsInWtc = matches.filter(match => match.category === INDIA_CATEGORY && fixtureFormatKey(match) === "test")
+    .map(match => ({ ...match, category: ENG_NZ_CATEGORY }));
+  const wtcTestsInIndia = [...scheduledTestMatches, ...resultTestMatches].filter(match => match.teams.includes("India"))
+    .map(match => ({ ...match, category: INDIA_CATEGORY }));
+  return dedupeDashboardMatches([...matches, ...scheduledIndiaMatches, ...resultIndiaMatches, ...scheduledTestMatches, ...resultTestMatches, ...indiaTestsInWtc, ...wtcTestsInIndia, ...scheduledWomensMatches, ...resultWomensMatches]).sort((a, b) => {
     const rank = { Live: 1, Upcoming: 2, Finished: 3, Unknown: 4 };
     return (rank[a.state] || 9) - (rank[b.state] || 9);
   });

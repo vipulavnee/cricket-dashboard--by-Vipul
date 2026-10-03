@@ -5,11 +5,14 @@ const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
 const serverSource = fs.readFileSync(path.join(root, "server-cricket.js"), "utf8");
-const server = vm.createContext({ require, __dirname: root, process, console });
+class ScheduleDate extends Date {
+  static now() { return Date.parse("2026-10-03T10:00:00Z"); }
+}
+const server = vm.createContext({ require, __dirname: root, process, console, Date: ScheduleDate });
 vm.runInContext(serverSource.slice(0, serverSource.lastIndexOf("app.listen(")), server);
 const html = fs.readFileSync(path.join(root, "public/cricket-dashboard.html"), "utf8");
 const script = [...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(match => match[1]).join("\n");
-const dashboard = vm.createContext({ console });
+const dashboard = vm.createContext({ console, Date: ScheduleDate });
 vm.runInContext(script.slice(0, script.lastIndexOf("try{")), dashboard);
 const evaluate = (context, code) => vm.runInContext(code, context);
 
@@ -75,7 +78,41 @@ async function main() {
   assert.equal(odi.matchFormat, "ODI");
   assert.equal(t20.state, "Finished");
   assert.equal(t20.status, "India won by 19 runs");
-  console.log("Passed: match isolation, ODI/T20 phases and overs, chase identity, separate fixture formats.");
+  assert.equal(evaluate(dashboard, "getMatchNumber({url:'https://www.cricbuzz.com/live-cricket-scores/171070/ind-vs-pak-gold-medal-match-asian-games-2026'})"), "Asian Games · T20I · Final");
+  assert.equal(evaluate(dashboard, "getMatchNumber({url:'https://www.cricbuzz.com/live-cricket-scores/171060/ind-vs-sl-2nd-semi-final-asian-games-2026'})"), "Asian Games · T20I · 2nd Semi-final");
+  const wtc = aggregated.filter(match => match.category === "Test Championship");
+  assert.equal(wtc.length, 64);
+  assert.equal(wtc.filter(match => match.state === "Finished").length, 40);
+  assert.equal(wtc.filter(match => match.state === "Upcoming").length, 24);
+  const upcomingTests = wtc.filter(match => match.state === "Upcoming").sort((a, b) => Date.parse(a.startISO) - Date.parse(b.startISO));
+  assert.equal(upcomingTests[0].startISO, "2026-10-09T07:30:00.000Z");
+  assert.equal(upcomingTests[0].venue, "Durban");
+  assert.equal(upcomingTests[upcomingTests.length - 1].matchNo, "Final");
+  assert.equal(upcomingTests[upcomingTests.length - 1].startISO, "2027-06-09T09:30:00.000Z");
+  dashboard.allTestMatches = JSON.parse(JSON.stringify(wtc));
+  const testViews = evaluate(dashboard, "withLocalSchedule(allTestMatches).filter(match=>match.category==='Test Championship')");
+  assert.equal(testViews.length, 64);
+  dashboard.testViews = testViews;
+  evaluate(dashboard, "allMatches=testViews; activeCompetition='Test Championship'");
+  assert.equal(evaluate(dashboard, "getUpcomingMatch().venue"), "Durban");
+  assert.equal(evaluate(dashboard, "getTournamentMatches().filter(match=>match.state==='Finished')[0].status"), "England won by 8 wickets");
+  const india = aggregated.filter(match => match.category === "Indian Men");
+  for (const test of wtc.filter(match => match.teams.includes("India"))) {
+    const copies = india.filter(match => match.id === test.id || (match.matchNo === test.matchNo && [...match.teams].sort().join('|') === [...test.teams].sort().join('|') && match.startISO.slice(0, 10) === test.startISO.slice(0, 10)));
+    assert.equal(copies.length, 1);
+    assert.equal(copies[0].status, test.status);
+  }
+  assert.equal(india.find(match => match.id === 'india-result-1529227').status, 'India won by 8 wickets (with 50 balls remaining)');
+  assert.equal(india.find(match => match.id === 'india-result-1529228').scores[1].score, '406/2');
+  assert.equal(india.find(match => match.id === 'india-result-1552773').scores.length, 0);
+  assert.equal(india.filter(match => match.id.startsWith('india-wc-')).length, 5);
+  for (const match of india.filter(match => match.id.startsWith('india-wc-'))) {
+    dashboard.worldCupMatch = JSON.parse(JSON.stringify(match));
+    assert.equal(evaluate(dashboard, "inningsOvers(worldCupMatch)"), 50);
+  }
+  const allIds = wtc.map(match => match.id);
+  assert.equal(new Set(allIds).size, 64);
+  console.log("Passed: match isolation, ODI/T20 logic, Asian Games labels, 64 unique WTC matches, India schedule and chronology.");
 }
 
 main().catch(error => { console.error(error); process.exitCode = 1; });
