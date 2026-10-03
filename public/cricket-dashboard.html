@@ -498,7 +498,7 @@ function dedupeDashboardMatches(list){
 /* Retained only as an inert historical reference; live tournament data comes from the server. */
 const $ = id => document.getElementById(id);
 const stateOf = m => String(m?.state || "").trim();
-const isODI = m => /\bodi\b/i.test(`${m?.name||""} ${m?.url||""}`);
+const isODI = m => /\bodi\b/i.test(`${m?.matchFormat||""} ${m?.format||""} ${m?.matchNo||""} ${m?.name||""} ${m?.url||""}`);
 const isTest = m => /\btest\b/i.test(`${m?.matchNo||""} ${m?.name||""} ${m?.url||""}`) || m?.category==="Test Championship";
 const inningsOvers = m => isODI(m) ? 50 : 20;
 const inningsBalls = m => inningsOvers(m) * 6;
