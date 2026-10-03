@@ -164,13 +164,14 @@ h1{font-size:42px;line-height:1;margin:10px 0;font-weight:950;letter-spacing:-.0
   <div class="topbar">
     <div class="brand">
       <div class="logo">W</div>
-      <div><div class="title">Vipul's Cricket Scoreboard</div><div class="subtitle" id="competitionSubtitle">ICC Women's T20 World Cup 2026 &middot; Live data</div></div>
+      <div><div class="title">Vipul's Cricket Scoreboard</div><div class="subtitle" id="competitionSubtitle">Indian Men &middot; Live data</div></div>
     </div>
     <div class="actions">
       <select class="competition-select" id="competitionSelect" onchange="changeCompetition(this.value)">
-        <option value="Women's T20 World Cup">Women's World Cup</option>
-        <option value="Indian Men">Indian Men</option>
+        <option value="Indian Men" selected>Indian Men</option>
         <option value="Test Championship">Test Championship</option>
+        <option value="Indian Women">Indian Women</option>
+        <option value="Women's T20 World Cup">Women's World Cup</option>
       </select>
       <div class="status warn" id="apiStatus">● Loading</div><button class="btn" onclick="loadMatches()">↻ Refresh</button>
     </div>
@@ -483,7 +484,7 @@ function dedupeDashboardMatches(list){
     if(!teams)continue;
     const ordinal=matchOrdinal(match);
     const date=String(match?.startISO||"").slice(0,10);
-    const forceDateKey=/local (?:schedule pending result|result copy|verified result)/i.test(String(match?.source||""))||match?.category==="Indian Men"||match?.category==="Test Championship";
+    const forceDateKey=/local (?:schedule pending result|result copy|verified result)/i.test(String(match?.source||""))||match?.category==="Indian Men"||match?.category==="Indian Women"||match?.category==="Test Championship";
     const stage=match?.category===TOURNAMENT_CATEGORY&&ordinal
       ? `${ordinal}-${fixtureFormatKey(match)}`
       : !forceDateKey&&ordinal?`${ordinal}-${fixtureFormatKey(match)}`:`${date||String(match?.id||match?.name||"")}-${fixtureFormatKey(match)}`;
@@ -510,6 +511,7 @@ const TEAM_SHORT = {
   "India Women":"IND-W","Ireland Women":"IRE-W","New Zealand Women":"NZ-W",
   "Netherlands Women":"NED-W","Pakistan Women":"PAK-W","Scotland Women":"SCO-W",
   "South Africa Women":"RSA-W","Sri Lanka Women":"SL-W","West Indies Women":"WI-W",
+  "Zimbabwe Women":"ZIM-W","Thailand Women":"THA-W","Hong Kong Women":"HK-W","Japan Women":"JPN-W",
   "Afghanistan":"AFG","Australia":"AUS","Bangladesh":"BAN","England":"ENG",
   "India":"IND","Ireland":"IRE","New Zealand":"NZ","Pakistan":"PAK",
   "South Africa":"RSA","Sri Lanka":"SL","West Indies":"WI","Zimbabwe":"ZIM"
@@ -982,6 +984,10 @@ function currentRR(match){
   return calculated || row?.rr || String(match?.liveDetails?.rr||"").trim() || "Innings not started";
 }
 
+function testDays(match){
+  return Number(match?.scheduledDays)===4?4:5;
+}
+
 function testDay(match){
   if(!isTest(match))return null;
   const source=[
@@ -1000,14 +1006,14 @@ function testDay(match){
     const now=new Date();
     const localStart=new Date(start.getFullYear(),start.getMonth(),start.getDate());
     const localToday=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-    return Math.max(1,Math.min(5,Math.floor((localToday-localStart)/86400000)+1));
+    return Math.max(1,Math.min(testDays(match),Math.floor((localToday-localStart)/86400000)+1));
   }
   return null;
 }
 
 function testDayBadge(match){
   const day=testDay(match);
-  return day?`<span class="test-day-badge">DAY ${day} OF 5</span>`:"";
+  return day?`<span class="test-day-badge">DAY ${day} OF ${testDays(match)}</span>`:"";
 }
 
 function testProgress(match){
@@ -1127,10 +1133,10 @@ function phase(match){
     return ["Innings Break","orange"];
   }
 
-  if(activeCompetition === "Test Championship"){
+  if(isTest(match)){
     const atStumps=/stump/i.test(`${match?.status||""} ${match?.rawText||""}`);
     const day=testDay(match);
-    return[`${day?`Day ${day} of 5 · `:""}${atStumps?"Stumps":"Test Match"}`,"blue"];
+    return[`${day?`Day ${day} of ${testDays(match)} · `:""}${atStumps?"Stumps":"Test Match"}`,"blue"];
   }
 
   const o=oversDec(displayOvers(match,currentScore(match)));
@@ -1155,7 +1161,7 @@ function momentum(match){
   if(isInningsBreak(match)){
     return ["Waiting for chase","blue"];
   }
-  if(activeCompetition === "Test Championship"){
+  if(isTest(match)){
     const batting=match?.liveDetails?.battingTeam;
     return[batting?`${batting} batting`:"Match in progress","blue"];
   }
@@ -1371,10 +1377,10 @@ function winPredictor(match){
     if(chase.needed<=0)return [`${chaseShort} 100%`, "pink"];
     if(chase.wicketsLeft<=0)return [`${defendTeam} 100%`, "blue-team"];
 
-    const day=testDay(match)||5;
+    const day=testDay(match)||testDays(match);
     const atStumps=/stump/i.test(`${match?.status||""} ${match?.liveDetails?.daySession||""} ${match?.rawText||""}`);
     const oversToday=atStumps?0:Number(match?.liveDetails?.oversLeftToday)||0;
-    const oversRemaining=Math.max(1,oversToday+Math.max(5-day,0)*90);
+    const oversRemaining=Math.max(1,oversToday+Math.max(testDays(match)-day,0)*90);
     const inningsRate=Number(currentRR(match))||3;
     const scoringCapacity=inningsRate*oversRemaining;
     const runsPerWicket=chase.needed/Math.max(chase.wicketsLeft,1);

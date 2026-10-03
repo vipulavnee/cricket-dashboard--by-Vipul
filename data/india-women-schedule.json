@@ -1,0 +1,42 @@
+{
+  "source": "https://www.cricinfo.com/team/india-women-1812/match-schedule-fixtures-and-results",
+  "verifiedAt": "2026-10-03",
+  "internationalOnly": true,
+  "testDaysByMatchId": {"1496551": 4, "1543896": 4},
+  "resultColumns": ["matchNo", "matchFormat", "team1", "team2", "startDate", "endDate", "venue", "score1", "overs1", "score2", "overs2", "status", "matchPath"],
+  "fixtureColumns": ["matchNo", "matchFormat", "team1", "team2", "startISO", "endDate", "venue", "matchPath"],
+  "results": [
+    ["1st T20I","T20I","India Women","England Women","2026-05-28","2026-05-28","Chelmsford","188/7","","150/8","20","India Women won by 38 runs","india-women-tour-in-england-2026-1496532/england-women-vs-india-women-1st-t20i-1496548/full-scorecard"],
+    ["2nd T20I","T20I","England Women","India Women","2026-05-30","2026-05-30","Bristol","168/5","","142/9","20","England Women won by 26 runs","india-women-tour-in-england-2026-1496532/england-women-vs-india-women-2nd-t20i-1496549/full-scorecard"],
+    ["3rd T20I","T20I","India Women","England Women","2026-06-02","2026-06-02","Taunton","180/5","","184/4","18.3","England Women won by 6 wickets (with 9 balls remaining)","india-women-tour-in-england-2026-1496532/england-women-vs-india-women-3rd-t20i-1496550/full-scorecard"],
+    ["World Cup · 6th Match · Group 1","T20I","India Women","Pakistan Women","2026-06-14","2026-06-14","Birmingham","170/6","","106","17","India Women won by 64 runs","icc-women-s-t20-world-cup-2026-1483859/india-women-vs-pakistan-women-6th-match-group-1-1490682/full-scorecard"],
+    ["World Cup · 10th Match · Group 1","T20I","India Women","Netherlands Women","2026-06-17","2026-06-17","Leeds","209/5","","114","17.3","India Women won by 95 runs","icc-women-s-t20-world-cup-2026-1483859/india-women-vs-netherlands-women-10th-match-group-1-1490686/full-scorecard"],
+    ["World Cup · 18th Match · Group 1","T20I","India Women","South Africa Women","2026-06-21","2026-06-21","Manchester","158/7","","161/4","19.1","South Africa Women won by 6 wickets (with 5 balls remaining)","icc-women-s-t20-world-cup-2026-1483859/india-women-vs-south-africa-women-18th-match-group-1-1490694/full-scorecard"],
+    ["World Cup · 23rd Match · Group 1","T20I","Bangladesh Women","India Women","2026-06-25","2026-06-25","Manchester","136/8","","139/5","16.5","India Women won by 5 wickets (with 19 balls remaining)","icc-women-s-t20-world-cup-2026-1483859/bangladesh-women-vs-india-women-23rd-match-group-1-1490699/full-scorecard"],
+    ["World Cup · 30th Match · Group 1","T20I","India Women","Australia Women","2026-06-28","2026-06-28","Lord's","170/4","","172/4","19","Australia Women won by 6 wickets (with 6 balls remaining)","icc-women-s-t20-world-cup-2026-1483859/australia-women-vs-india-women-30th-match-group-1-1490706/full-scorecard"],
+    ["Only Test","TEST","India Women","England Women","2026-07-10","2026-07-13","Lord's","285 & 341/7d","","170 & 186","","India Women won by 270 runs","india-women-tour-in-england-2026-1496532/england-women-vs-india-women-only-test-1496551/full-scorecard"],
+    ["Asia Cup · 3rd Match · Group A","T20I","India Women","Thailand Women","2026-08-30","2026-08-30","Dubai (DICS)","159/9","","65","16.1","India Women won by 94 runs","women-s-asia-cup-2026-1548888/india-women-vs-thailand-women-3rd-match-group-a-1548893/full-scorecard"],
+    ["Asia Cup · 7th Match · Group A","T20I","India Women","Hong Kong Women","2026-09-03","2026-09-03","Dubai (DICS)","193/5","","56","16.2","India Women won by 137 runs","women-s-asia-cup-2026-1548888/hong-kong-women-vs-india-women-7th-match-group-a-1548897/full-scorecard"],
+    ["Asia Cup · 9th Match · Group A","T20I","Pakistan Women","India Women","2026-09-05","2026-09-05","Dubai (DICS)","55","","57/3","8.4","India Women won by 7 wickets (with 68 balls remaining)","women-s-asia-cup-2026-1548888/india-women-vs-pakistan-women-9th-match-group-a-1548899/full-scorecard"],
+    ["Asia Cup · 1st Semi-final","T20I","India Women","Bangladesh Women","2026-09-10","2026-09-10","Dubai (DICS)","149/6","","109/7","20","India Women won by 40 runs","women-s-asia-cup-2026-1548888/bangladesh-women-vs-india-women-1st-semi-final-1548903/full-scorecard"],
+    ["Asia Cup · Final","T20I","India Women","Sri Lanka Women","2026-09-13","2026-09-13","Dubai (DICS)","183/5","","111","20","India Women won by 72 runs","women-s-asia-cup-2026-1548888/india-women-vs-sri-lanka-women-final-1548905/full-scorecard"],
+    ["Asian Games · T20I · 4th Quarter-final","T20I","Japan Women","India Women","2026-09-18","2026-09-18","Nisshin","57","","59/2","5","India Women won by 8 wickets (with 90 balls remaining)","asian-games-women-s-cricket-competition-2026-1550472/japan-women-vs-india-women-4th-quarter-final-1550477/full-scorecard"],
+    ["Asian Games · T20I · 2nd Semi-final","T20I","India Women","Bangladesh Women","2026-09-20","2026-09-20","Nisshin","195/4","","81","15.4","India Women won by 114 runs","asian-games-women-s-cricket-competition-2026-1550472/bangladesh-women-vs-india-women-2nd-semi-final-1550479/full-scorecard"],
+    ["Asian Games · T20I · Final","T20I","India Women","Sri Lanka Women","2026-09-22","2026-09-22","Nisshin","216/3","","69","15.4","India Women won by 147 runs","asian-games-women-s-cricket-competition-2026-1550472/india-women-vs-sri-lanka-women-final-1550481/full-scorecard"]
+  ],
+  "fixtures": [
+    ["1st T20I","T20I","India Women","Zimbabwe Women","2026-10-16T13:30:00.000Z","2026-10-16","Raipur","zimbabwe-women-in-india-2026-27-1535648/india-women-vs-zimbabwe-women-1st-t20i-1535652/live-cricket-score"],
+    ["2nd T20I","T20I","India Women","Zimbabwe Women","2026-10-18T13:30:00.000Z","2026-10-18","Raipur","zimbabwe-women-in-india-2026-27-1535648/india-women-vs-zimbabwe-women-2nd-t20i-1535653/live-cricket-score"],
+    ["3rd T20I","T20I","India Women","Zimbabwe Women","2026-10-20T13:30:00.000Z","2026-10-20","Raipur","zimbabwe-women-in-india-2026-27-1535648/india-women-vs-zimbabwe-women-3rd-t20i-1535654/live-cricket-score"],
+    ["1st ODI","ODI","India Women","Zimbabwe Women","2026-10-23T08:30:00.000Z","2026-10-23","Vadodara","zimbabwe-women-in-india-2026-27-1535648/india-women-vs-zimbabwe-women-1st-odi-1535655/live-cricket-score"],
+    ["2nd ODI","ODI","India Women","Zimbabwe Women","2026-10-25T08:30:00.000Z","2026-10-25","Vadodara","zimbabwe-women-in-india-2026-27-1535648/india-women-vs-zimbabwe-women-2nd-odi-1535656/live-cricket-score"],
+    ["3rd ODI","ODI","India Women","Zimbabwe Women","2026-10-28T08:30:00.000Z","2026-10-28","Vadodara","zimbabwe-women-in-india-2026-27-1535648/india-women-vs-zimbabwe-women-3rd-odi-1535657/live-cricket-score"],
+    ["Only Test","TEST","South Africa Women","India Women","2026-12-09T08:00:00.000Z","2026-12-12","Gqeberha","india-women-in-south-africa-2026-27-1543874/south-africa-women-vs-india-women-only-test-1543896/live-cricket-score"],
+    ["1st ODI","ODI","South Africa Women","India Women","2026-12-16T08:00:00.000Z","2026-12-16","Potchefstroom","india-women-in-south-africa-2026-27-1543874/south-africa-women-vs-india-women-1st-odi-1543893/live-cricket-score"],
+    ["2nd ODI","ODI","South Africa Women","India Women","2026-12-19T12:00:00.000Z","2026-12-19","Bloemfontein","india-women-in-south-africa-2026-27-1543874/south-africa-women-vs-india-women-2nd-odi-1543894/live-cricket-score"],
+    ["3rd ODI","ODI","South Africa Women","India Women","2026-12-22T12:00:00.000Z","2026-12-22","Cape Town","india-women-in-south-africa-2026-27-1543874/south-africa-women-vs-india-women-3rd-odi-1543895/live-cricket-score"],
+    ["1st T20I","T20I","South Africa Women","India Women","2026-12-26T16:00:00.000Z","2026-12-26","Benoni","india-women-in-south-africa-2026-27-1543874/south-africa-women-vs-india-women-1st-t20i-1548868/live-cricket-score"],
+    ["2nd T20I","T20I","South Africa Women","India Women","2026-12-29T16:00:00.000Z","2026-12-29","Potchefstroom","india-women-in-south-africa-2026-27-1543874/south-africa-women-vs-india-women-2nd-t20i-1548869/live-cricket-score"],
+    ["3rd T20I","T20I","South Africa Women","India Women","2026-12-30T16:00:00.000Z","2026-12-30","Potchefstroom","india-women-in-south-africa-2026-27-1543874/south-africa-women-vs-india-women-3rd-t20i-1548870/live-cricket-score"]
+  ]
+}

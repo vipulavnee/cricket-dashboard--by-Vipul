@@ -38,6 +38,9 @@ const WOMENS_WORLD_CUP_TEAMS = {
   nedw: "Netherlands Women", pakw: "Pakistan Women", scow: "Scotland Women",
   rsaw: "South Africa Women", slw: "Sri Lanka Women", wiw: "West Indies Women"
 };
+const WOMENS_TEAMS = { ...WOMENS_WORLD_CUP_TEAMS,
+  zimw: "Zimbabwe Women", thaiw: "Thailand Women", hkw: "Hong Kong Women", jpnw: "Japan Women"
+};
 
 const MENS_TEAMS = {
   afg: "Afghanistan", aus: "Australia", ban: "Bangladesh", eng: "England",
@@ -45,9 +48,10 @@ const MENS_TEAMS = {
   rsa: "South Africa", sl: "Sri Lanka", wi: "West Indies", zim: "Zimbabwe"
 };
 
-const CRICKET_TEAMS = { ...WOMENS_WORLD_CUP_TEAMS, ...MENS_TEAMS };
+const CRICKET_TEAMS = { ...WOMENS_TEAMS, ...MENS_TEAMS };
 const WOMENS_CATEGORY = "Women's T20 World Cup";
 const INDIA_CATEGORY = "Indian Men";
+const INDIA_WOMEN_CATEGORY = "Indian Women";
 const ENG_NZ_CATEGORY = "Test Championship";
 
 // Source: https://www.cricinfo.com/team/india-6/match-schedule-fixtures-and-results (verified 2026-10-03).
@@ -402,8 +406,8 @@ function scheduledFixtureState(fixture, now = Date.now()) {
   if (!Number.isFinite(start)) return "Upcoming";
   if (start > now) return "Upcoming";
 
-  const text = `${fixture.matchNo || ""} ${fixture.url || ""}`.toLowerCase();
-  const matchHours = text.includes("odi") ? 9 : text.includes("test") ? 120 : 5;
+  const format = fixtureFormatKey(fixture);
+  const matchHours = format === "odi" ? 9 : format === "test" ? (fixture.scheduledDays || 5) * 24 : 5;
   return now - start <= matchHours * 60 * 60 * 1000 ? "Live" : "Finished";
 }
 
@@ -685,7 +689,8 @@ const TEAM_SHORT = {
   "New Zealand Women": "NZW", "Netherlands Women": "NEDW",
   "Pakistan Women": "PAKW", "Scotland Women": "SCOW",
   "South Africa Women": "RSAW", "Sri Lanka Women": "SLW",
-  "West Indies Women": "WIW"
+  "West Indies Women": "WIW", "Zimbabwe Women": "ZIMW",
+  "Thailand Women": "THAW", "Hong Kong Women": "HKW", "Japan Women": "JPNW"
   ,"Afghanistan": "AFG", "Australia": "AUS", "Bangladesh": "BAN",
   "England": "ENG", "India": "IND", "Ireland": "IRE", "New Zealand": "NZ",
   "Pakistan": "PAK", "South Africa": "RSA", "Sri Lanka": "SL",
@@ -693,6 +698,34 @@ const TEAM_SHORT = {
 };
 
 const ALL_SHORTS = Object.values(TEAM_SHORT);
+
+const INDIA_WOMEN_SNAPSHOT = require(path.join(__dirname, "data/india-women-schedule.json"));
+function indiaWomenSnapshotFixture(row, finished) {
+  const [matchNo, matchFormat, team1, team2, startISO, endISO, venue, ...detail] = row;
+  const matchPath = detail[finished ? 5 : 0];
+  const matchId = matchPath.match(/-(\d+)\/(?:full-scorecard|live-cricket-score)$/)[1];
+  const scores = finished ? [
+    { team: getTeamShort(team1), score: detail[0], overs: detail[1] },
+    { team: getTeamShort(team2), score: detail[2], overs: detail[3] }
+  ] : [];
+  return {
+    id: `india-women-${matchId}`,
+    matchNo, matchFormat, teams: [team1, team2], startISO, endISO, venue,
+    endTimeKnown: false, timeTBA: finished,
+    ...(matchFormat === "TEST" ? { scheduledDays: INDIA_WOMEN_SNAPSHOT.testDaysByMatchId[matchId] } : {}),
+    url: `https://www.cricinfo.com/series/${matchPath}`,
+    scheduleSource: INDIA_WOMEN_SNAPSHOT.source, verifiedAt: INDIA_WOMEN_SNAPSHOT.verifiedAt,
+    ...(finished ? { state: "Finished", status: detail[4], scores,
+      score: scores.map(score => `${score.team} ${score.score}${score.overs ? ` (${score.overs} ov)` : ""}`).join(" | ")
+    } : {})
+  };
+}
+const INDIA_WOMEN_FUTURE_FIXTURES = INDIA_WOMEN_SNAPSHOT.fixtures.map(row => indiaWomenSnapshotFixture(row, false));
+const INDIA_WOMEN_RESULT_FIXTURES = INDIA_WOMEN_SNAPSHOT.results.map(row => indiaWomenSnapshotFixture(row, true));
+
+function isInternationalMatch(match) {
+  return !/warm[-\s]?up|tour[-\s]match|practice|development|emerging/i.test(`${match?.matchNo || ""} ${match?.url || ""}`);
+}
 
 function clean(value) {
   return String(value || "")
@@ -983,7 +1016,9 @@ function getTeamShort(teamName) {
 function getMatchCategory(slug, teams) {
   const lower = String(slug || "").toLowerCase();
   if (teams.length !== 2) return "";
+  if (teams.includes("India Women") && !isInternationalMatch({ url: slug })) return "";
   if (lower.includes("women") && lower.includes("world-cup")) return WOMENS_CATEGORY;
+  if (teams.includes("India Women")) return INDIA_WOMEN_CATEGORY;
   if (teams.includes("India")) return INDIA_CATEGORY;
   if (/\btest\b/i.test(lower) && !lower.includes("women")) return ENG_NZ_CATEGORY;
   return "";
@@ -1604,7 +1639,7 @@ async function scrapeWomensT20WorldCupBase() {
 
 async function scrapeWomensT20WorldCup() {
   const baseMatches = await scrapeWomensT20WorldCupBase();
-  const categories = [WOMENS_CATEGORY, INDIA_CATEGORY, ENG_NZ_CATEGORY];
+  const categories = [INDIA_CATEGORY, ENG_NZ_CATEGORY, INDIA_WOMEN_CATEGORY, WOMENS_CATEGORY];
   const isEnglandNewZealandItem = item => {
     const teams = (item.teams || []).map(team => String(team || "").toLowerCase().replace(/\s+women$/, "").trim());
     return teams.includes("england") && teams.includes("new zealand");
@@ -1644,7 +1679,7 @@ async function scrapeWomensT20WorldCup() {
 
     const detail = await fetchMatchDetail(item.url, item.teams, preliminaryState);
 
-    const embeddedTest = item.category === ENG_NZ_CATEGORY && item.embedded?.matchInfo?.matchFormat === "TEST";
+    const embeddedTest = item.embedded?.matchInfo?.matchFormat === "TEST";
     if (embeddedTest) {
       const structuredScores = structuredTestScores(item.embedded);
       if (structuredScores.length) detail.scores = structuredScores;
@@ -1688,7 +1723,7 @@ async function scrapeWomensT20WorldCup() {
     if (state === "Live" && item.category === WOMENS_CATEGORY) {
       status = deriveT20ChaseStatus(finalScores) || status;
     }
-    if (state === "Live" && item.category === ENG_NZ_CATEGORY && !embeddedTest && !detail.structuredStatus) {
+    if (state === "Live" && (item.category === ENG_NZ_CATEGORY || fixtureFormatKey({ ...item, matchFormat: detail.matchFormat }) === "test") && !embeddedTest && !detail.structuredStatus) {
       const testContext = deriveTestContext(finalScores, item.teams);
       if (testContext) {
         const atStumps = /stump/i.test(status);
@@ -1793,7 +1828,24 @@ async function scrapeWomensT20WorldCup() {
     .map(match => ({ ...match, category: ENG_NZ_CATEGORY }));
   const wtcTestsInIndia = [...scheduledTestMatches, ...resultTestMatches].filter(match => match.teams.includes("India"))
     .map(match => ({ ...match, category: INDIA_CATEGORY }));
-  return dedupeDashboardMatches([...matches, ...scheduledIndiaMatches, ...resultIndiaMatches, ...scheduledTestMatches, ...resultTestMatches, ...indiaTestsInWtc, ...wtcTestsInIndia, ...scheduledWomensMatches, ...resultWomensMatches]).sort((a, b) => {
+  const scheduledIndiaWomenMatches = INDIA_WOMEN_FUTURE_FIXTURES
+    .filter(fixture => !hasSameScheduledMatch(matches, fixture, INDIA_WOMEN_CATEGORY))
+    .map(fixture => scheduleFixtureToMatch(fixture, INDIA_WOMEN_CATEGORY));
+  const resultIndiaWomenMatches = INDIA_WOMEN_RESULT_FIXTURES.map(fixture => ({
+    ...fixture, name: getMatchName(fixture.teams), category: INDIA_WOMEN_CATEGORY,
+    source: "Local verified result", liveDetails: { venue: fixture.venue }, rawText: fixture.status
+  }));
+  const worldCupInIndiaWomen = [...matches, ...scheduledWomensMatches, ...resultWomensMatches]
+    .filter(match => match.category === WOMENS_CATEGORY && match.teams.includes("India Women") && isInternationalMatch(match))
+    .map(match => ({ ...match, matchFormat: match.matchFormat || "T20I", category: INDIA_WOMEN_CATEGORY }));
+  const enrichIndiaWomenMatch = match => {
+    if (match.category !== INDIA_WOMEN_CATEGORY) return match;
+    const fixture = [...INDIA_WOMEN_FUTURE_FIXTURES, ...INDIA_WOMEN_RESULT_FIXTURES]
+      .find(fixture => hasSameScheduledMatch([match], fixture, INDIA_WOMEN_CATEGORY));
+    return fixture ? { ...match, matchNo: fixture.matchNo, scheduledDays: fixture.scheduledDays } : match;
+  };
+  return dedupeDashboardMatches([...matches, ...scheduledIndiaMatches, ...resultIndiaMatches, ...scheduledTestMatches, ...resultTestMatches, ...indiaTestsInWtc, ...wtcTestsInIndia, ...scheduledWomensMatches, ...resultWomensMatches,
+    ...scheduledIndiaWomenMatches, ...resultIndiaWomenMatches, ...worldCupInIndiaWomen].map(enrichIndiaWomenMatch)).sort((a, b) => {
     const rank = { Live: 1, Upcoming: 2, Finished: 3, Unknown: 4 };
     return (rank[a.state] || 9) - (rank[b.state] || 9);
   });
@@ -1837,6 +1889,7 @@ function dedupeDashboardMatches(list) {
     const date = String(match?.startISO || "").slice(0, 10);
     const forceDateKey = /local (?:schedule pending result|result copy|verified result)/i.test(String(match?.source || ""))
       || match?.category === INDIA_CATEGORY
+      || match?.category === INDIA_WOMEN_CATEGORY
       || match?.category === ENG_NZ_CATEGORY;
     const stage = !forceDateKey && ordinal ? `${ordinal}-${fixtureFormatKey(match)}` : `${date || String(match?.id || match?.name || "")}-${fixtureFormatKey(match)}`;
     const key = `${match?.category || ""}|${teams}|${stage}`;

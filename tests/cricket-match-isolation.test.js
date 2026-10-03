@@ -112,7 +112,41 @@ async function main() {
   }
   const allIds = wtc.map(match => match.id);
   assert.equal(new Set(allIds).size, 64);
+  const options = [...html.matchAll(/<option value="([^"]+)"[^>]*>/g)].map(match => match[1]);
+  assert.deepEqual(options, ["Indian Men", "Test Championship", "Indian Women", "Women's T20 World Cup"]);
+  assert.equal(evaluate(dashboard, "DEFAULT_CATEGORY"), "Indian Men");
+  assert.match(html, /<option value="Indian Men" selected>/);
+  assert.equal(evaluate(server, "getMatchCategory('indw-vs-zimw-1st-t20i-zimbabwe-women-tour-of-india', ['India Women','Zimbabwe Women'])"), "Indian Women");
+  assert.equal(evaluate(server, "getMatchCategory('indw-vs-pakw-6th-match-womens-t20-world-cup', ['India Women','Pakistan Women'])"), "Women's T20 World Cup");
+  assert.equal(evaluate(server, "getMatchCategory('indw-vs-engw-warm-up', ['India Women','England Women'])"), "");
+  assert.equal(evaluate(server, "getMatchCategory('indw-vs-engw-tour-match', ['India Women','England Women'])"), "");
+  const indiaWomen = aggregated.filter(match => match.category === "Indian Women");
+  assert.equal(indiaWomen.length, 30);
+  assert.equal(indiaWomen.filter(match => match.state === "Upcoming").length, 13);
+  assert.equal(indiaWomen.filter(match => match.state === "Finished").length, 17);
+  assert.ok(indiaWomen.every(match => match.teams.includes('India Women')));
+  assert.ok(indiaWomen.every(match => !/warm-up|tour-match|emerging|development/i.test(match.url)));
+  assert.ok(india.every(match => !match.teams.includes('India Women')));
+  const upcomingWomen = indiaWomen.filter(match => match.state === 'Upcoming').sort((a,b) => Date.parse(a.startISO)-Date.parse(b.startISO));
+  assert.equal(upcomingWomen[0].startISO, '2026-10-16T13:30:00.000Z');
+  assert.equal(upcomingWomen[0].venue, 'Raipur');
+  const womenTest = indiaWomen.find(match => match.id === 'india-women-1543896');
+  assert.equal(womenTest.scheduledDays, 4);
+  server.womenTest = womenTest;
+  assert.equal(evaluate(server, "scheduledFixtureState(womenTest, Date.parse('2026-12-13T10:00:00Z'))"), 'Finished');
+  dashboard.womenMatches = JSON.parse(JSON.stringify(indiaWomen));
+  evaluate(dashboard, "allMatches=withLocalSchedule(womenMatches); activeCompetition='Indian Women'");
+  assert.equal(evaluate(dashboard, 'getTournamentMatches().length'), 30);
+  assert.equal(evaluate(dashboard, 'getUpcomingMatch().id'), 'india-women-1535652');
+  assert.equal(evaluate(dashboard, 'getPrimaryMatch().id'), 'india-women-1550481');
+  dashboard.womenODI = JSON.parse(JSON.stringify(indiaWomen.find(match => match.id === 'india-women-1535655')));
+  assert.equal(evaluate(dashboard, 'inningsOvers(womenODI)'), 50);
+  dashboard.womenLiveTest = { ...JSON.parse(JSON.stringify(womenTest)), state:'Live', status:'Day 4 - Lunch', liveDetails:{battingTeam:'INDW'} };
+  assert.equal(evaluate(dashboard, 'phase(womenLiveTest)[0]'), 'Day 4 of 4 · Test Match');
+  assert.equal(evaluate(dashboard, 'momentum(womenLiveTest)[0]'), 'INDW batting');
+  assert.ok(evaluate(dashboard, 'testDayBadge(womenLiveTest)').includes('DAY 4 OF 4'));
   console.log("Passed: match isolation, ODI/T20 logic, Asian Games labels, 64 unique WTC matches, India schedule and chronology.");
+  console.log("Passed: Indian Women internationals only, 13 upcoming fixtures, tab order, men's default and four-day Test logic.");
 }
 
 main().catch(error => { console.error(error); process.exitCode = 1; });
